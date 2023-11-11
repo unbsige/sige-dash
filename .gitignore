@@ -1,0 +1,27 @@
+# IDEs / Editors
+.vscode/
+.idea/
+.docker/
+
+# Environments
+.env
+.venv
+env/
+venv/
+
+# Compiled Python files
+*.pyc
+*.pyo
+*.pyd
+
+# Cache and log
+*.pyc
+*.pyo
+*.pyd
+*.pyc
+*.pyo
+*.log
+.mypy_cache/
+.pytest_cache/
+.pycache/
+__pycache__/

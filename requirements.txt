@@ -1,0 +1,4 @@
+numpy==1.24.*
+pandas==1.4.*
+pipx==1.1.*
+streamlit==1.28.*
