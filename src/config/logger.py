@@ -36,8 +36,8 @@ def create_logs_dir(path: Path):
 
 
 def config_logger():
-    console_level = os.getenv("CONSOLE_LOG_LEVEL", "INFO")
-    file_level = os.getenv("FILE_LOG_LEVEL", "INFO")
+    console_level = os.getenv("CONSOLE_LOG_LEVEL", "WARNING")
+    file_level = os.getenv("FILE_LOG_LEVEL", "WARNING")
     file_path = os.getenv("LOG_FILE_PATH", "logs/app.log")
     log_path = Path(file_path).parent
 
