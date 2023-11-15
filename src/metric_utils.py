@@ -5,17 +5,14 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 # MAPE
 def mean_absolute_percentage_error(y_true, y_pred):
     y_true, y_pred = np.array(y_true), np.array(y_pred)
-    return (
-        np.mean(
-            np.abs((y_true[y_true != 0] - y_pred[y_true != 0]) / y_true[y_true != 0])
-        )
-        * 100
-    )
+    mape = np.abs((y_true[y_true != 0] - y_pred[y_true != 0]) / y_true[y_true != 0])
+    return np.mean(mape) * 100
 
 
 # sMAPE
 def symmetric_mean_absolute_percentage_error(y_true, y_pred):
-    return 200 * np.mean(np.abs(y_pred - y_true) / (np.abs(y_pred) + np.abs(y_true)))
+    smape = np.abs(y_pred - y_true) / (np.abs(y_pred) + np.abs(y_true))
+    return np.mean(smape) * 200
 
 
 # MASE
@@ -37,9 +34,8 @@ def print_calculate_metrics(y_true, y_pred, title):
     print("\n" + "=" * 120)
     print(f"Resumo das métricas de precisão ({title})".center(120))
     print("=" * 120 + "\n")
-
     print(f"MAE: {acc['mae']:>8.2f} - Média da diferença entre previsões e valores reais.")
-    print(f"RMSE: {acc['rmse']:>8.2f} - Erro médio do modelo em relação aos valores observados.")
+    print( f"RMSE: {acc['rmse']:>8.2f} - Erro médio do modelo em relação aos valores observados.")
     print(f"R²: {acc['r2']:>8.2f} - Coeficiente de determinação R².")
     print(f"MSE: {acc['mse']:>8.2f} - Média dos quadrados das diferenças entre previstos e reais.")
     print(f"MAPE: {acc['mape']:>7.2f}% - Desvio percentual médio das previsões em relação aos valores reais.")
@@ -56,5 +52,3 @@ def calculate_metrics(y_true, y_pred):
         "mape": mean_absolute_percentage_error(y_true, y_pred),
         "smape": symmetric_mean_absolute_percentage_error(y_true, y_pred),
     }
-
-
