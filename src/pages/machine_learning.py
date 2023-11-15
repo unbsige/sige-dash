@@ -1,11 +1,17 @@
 import pandas as pd
-
-# import plotly.express as px
+import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 import xgboost as xgb
 
-from src.config.settings import END_DATE, FEATURES, SPLIT_DATE, START_DATE, TARGET
+from src.config.settings import (
+    END_DATE,
+    IRRAD_FEATURES,
+    SPLIT_DATE,
+    START_DATE,
+    TARGET_COLS,
+    TIME_FEATURES,
+)
 from src.metric_utils import calculate_metrics
 
 st.set_page_config(
@@ -14,23 +20,54 @@ st.set_page_config(
     layout="wide",
 )
 
+if "df_prod" not in st.session_state:
+    st.stop()
+
 st.title("Visualização dos Dados")
-st.subheader("Dataframe Geral")
-df = st.session_state["df"]
-st.dataframe(df, use_container_width=True)
+st.subheader("Dataframe Producao de energia")
+df_prod = st.session_state.df_prod
+df_rad = st.session_state.df_rad
+df_prod = df_prod.drop(columns=["month_name", "day_name"])
 
-cols_ml = [TARGET] + FEATURES
-df = df.rename(columns={"avg_ldtea": TARGET})
-df = df[cols_ml]
+st.dataframe(df_prod.head(), use_container_width=True)
 
-df_base = df.loc[START_DATE:END_DATE].copy()
-df_eval = df.loc[END_DATE:].copy()
+st.subheader("Dataframe Irradiância Solar")
+st.dataframe(df_rad.head(), use_container_width=True)
+use_irad = st.checkbox("Utilizar dataframe de irradiância como recurso para previsão de produção de energia")
 
-df_train = df_base.loc[:SPLIT_DATE]
-df_test = df_base.loc[SPLIT_DATE:]
+st.sidebar.subheader("1. Preparar dataframe")
+target = st.sidebar.selectbox("Selecione coluna target", options=TARGET_COLS)
+time_features = st.sidebar.multiselect("Selecione recursos de tempo", options=TIME_FEATURES)
 
-st.subheader("Dataframe para projeto de ML")
-st.write("###### Selecionado colunas de recursos e avg_ldtea como target")
+if use_irad:
+    df = pd.concat([df_prod, df_rad], axis=1)
+    irrad_features = st.sidebar.multiselect("Selecione recursos de irradiacao", options=IRRAD_FEATURES)
+    features = time_features + irrad_features
+else:
+    df = df_prod.copy()
+    features = time_features
+
+st.subheader("1. Preparar dataframe para projeto de ML")
+if not target or not features:
+    st.warning("Selecione a coluna de target e no minimo uma coluna de recurso")
+    st.stop()
+
+df_ml = df[features + [target]].copy()
+df_base = df_ml.loc[START_DATE:END_DATE].copy()
+df_eval = df_ml.loc[END_DATE:].copy()
+
+# colorir a coluna target no dataframe
+st.dataframe(df_base.head(), column_config={"target": {"color": "coral"}})
+
+st.divider()
+st.subheader("2. Dividir dataframe em treino e teste")
+
+st.sidebar.divider()
+st.sidebar.subheader("2. Selecione a data de corte do dataset de teste")
+split_date = st.sidebar.date_input("Data de corte", value=SPLIT_DATE)
+
+df_train = df_base.loc[:split_date]
+df_test = df_base.loc[split_date:]
 
 c1, c2 = st.columns(2)
 with c1.expander("Dataset de treino - df_train"):
@@ -83,7 +120,7 @@ with c2.expander("Dataset de treino - df_test"):
 graph = [
     go.Scatter(
         x=df_train.index,
-        y=df_train[TARGET],
+        y=df_train[target],
         mode='lines',
         line=dict(color="darkcyan"),
         name='train set'
@@ -91,7 +128,7 @@ graph = [
 
     go.Scatter(
         x=df_test.index,
-        y=df_test[TARGET],
+        y=df_test[target],
         mode='lines',
         line=dict(color="coral"),
         name='test set'
@@ -130,7 +167,7 @@ layout = dict(
 fig = go.Figure(data=graph, layout=layout)
 
 fig.add_vline(
-    x=SPLIT_DATE,
+    x=split_date,
     line_width=2,
     line_dash="dash",
     line_color="white",
@@ -149,16 +186,18 @@ fig.add_annotation(
     ax=60,
     ay=-30
 )
+st.plotly_chart(fig, use_container_width=True)
+
 st.divider()
 
 # Preparar série temporal para previsão (treino e teste)
-X_train = df_train[FEATURES]
-y_train = df_train[[TARGET]]
+X_train = df_train[features]
+y_train = df_train[[target]]
 
-X_test = df_test[FEATURES]
-y_test = df_test[[TARGET]]
+X_test = df_test[features]
+y_test = df_test[[target]]
 
-df_pred = df_test[[TARGET]].copy()
+df_pred = df_test[[target]].copy()
 exp_exec = False
 
 if st.button("Iniciar Experimento"):
@@ -171,7 +210,7 @@ if st.button("Iniciar Experimento"):
             verbose=500,
         )
 
-        df_pred.rename(columns={TARGET: "y_true"}, inplace=True)
+        df_pred.rename(columns={target: "y_true"}, inplace=True)
         df_pred["xgb_pred"] = xgb_base.predict(X_test)
 
     st.success("Experimento finalizado")
@@ -258,3 +297,36 @@ if exp_exec:
     )
     fig = go.Figure(data=graph, layout=layout)
     st.plotly_chart(fig, use_container_width=True)
+
+    st.divider()
+    # Importancia das Variaveis (Feature Importance) xgboost
+
+    features_importance = pd.DataFrame(
+        data=xgb_base.feature_importances_,
+        index=xgb_base.feature_names_in_,
+        columns=["importance"],
+    )
+
+    total_importance = features_importance["importance"].sum()
+    features_importance["percentage"] = (features_importance["importance"] / total_importance) * 100
+    sorted_df = features_importance.sort_values(by="percentage", ascending=True)
+
+    st.write("## Importância dos recursos")
+    fig = px.bar(
+        sorted_df.head(10),
+        x="importance",
+        y=sorted_df.head(10).index,
+        orientation="h",
+        color_continuous_scale=px.colors.sequential.Viridis,
+        title="Importância dos recursos (Feature Importance)",
+        labels={"importance": "Importância (%)", "index": "Variável"},
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.download_button(
+        "Download Model",
+        # data=pickle.dumps(clf),
+        # file_name="model.pkl",
+    )
+
+
