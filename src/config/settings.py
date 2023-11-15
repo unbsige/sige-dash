@@ -21,8 +21,8 @@ FEATURES = [
     "hour",
     "day",
     "month",
-    "day_of_week",
-    "is_weekend",
+    "weekday",
+    "weekend",
     "is_night",
 ]
 IS_WEEKEND_MAP = {0: "Dia da Semana", 1: "Fim de Semana"}
