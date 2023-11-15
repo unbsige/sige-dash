@@ -30,6 +30,16 @@ def load_dataset(filepath, frequency):
     return df
 
 
+def load_add_cache(file_path, freq):
+    df_raw = load_dataset(file_path, freq)
+    df_agg = aggregate_ldtea(df_raw)
+    df = add_time_features(df_agg)
+    df.sort_index(inplace=True)
+    st.session_state["df"] = df
+    st.session_state["df_raw"] = df_raw
+    st.session_state["df_agg"] = df_agg
+
+
 def aggregate_ldtea(df):
     logger.info("Iniciando aggregate_ldtea")
 
@@ -54,11 +64,15 @@ def add_time_features(df):
     return df
 
 
-def run_app(df, df_raw, df_agg):
+def run_app():
     logger.info("Iniciando run_app")
 
     st.title("Produção de energia solar UnB ⚡")
     st.subheader("Dataframes")
+
+    df = st.session_state["df"]
+    df_raw = st.session_state["df_raw"]
+    df_agg = st.session_state["df_agg"]
 
     col1, col2 = st.columns(2)
     with col1.expander("Produção de energia - dados brutos"):
@@ -80,7 +94,7 @@ def run_app(df, df_raw, df_agg):
 
     # =================================================================================================================
     st.write(" ")
-    st.markdown("---")
+    st.divider()
     st.subheader("Graficos")
     st.sidebar.subheader("Filtros")
 
@@ -122,9 +136,8 @@ def run_app(df, df_raw, df_agg):
         "Produção de Energia",
     )
 
-    # =================================================================================================================
     st.write(" ")
-    st.markdown("---")
+    st.divider()
 
     y_column = st.sidebar.selectbox(
         "Selecione o medidor",
@@ -144,7 +157,6 @@ def run_app(df, df_raw, df_agg):
         f"{y_column} - Produção de Energia: ({start_date} - {end_date})",
     )
 
-    # =================================================================================================================
     st.write(" ")
     st.markdown("---")
 
@@ -174,7 +186,6 @@ def run_app(df, df_raw, df_agg):
             f"Produção media de energia por dia da semana: {y_column}",
         )
 
-    # =================================================================================================================
     st.write(" ")
     st.markdown("---")
 
@@ -183,10 +194,7 @@ def run_app(df, df_raw, df_agg):
 
 def main():
     logger.info("Iniciando main")
-
     logo = Image.open(settings.ROOT_DIR / "assets" / "unb_logo.jpeg")
-    # container = st.container()
-    # container.image(logo, width=200)
 
     st.sidebar.title("UnB - Solar Production")
     st.sidebar.image(logo, use_column_width=True)
@@ -199,11 +207,7 @@ def main():
         st.error(f"Arquivo {file_path} não encontrado")
         return
 
-    df_raw = load_dataset(file_path, freq)
-    df_agg = aggregate_ldtea(df_raw)
-    df = add_time_features(df_agg)
-    df.sort_index(inplace=True)
+    if "data" not in st.session_state:
+        load_add_cache(file_path, freq)
 
-    st.session_state.df = df
-
-    run_app(df, df_raw, df_agg)
+    run_app()
