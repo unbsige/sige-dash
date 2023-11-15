@@ -20,32 +20,39 @@ st.set_page_config(
 
 
 @st.cache_resource
-def load_dataset(filepath, frequency):
+def load_dataset(filepath, freq):
     logger.info("Carregando dados de produção de energia")
 
     df = pd.read_csv(filepath, parse_dates=["date_time"])
     df.set_index("date_time", inplace=True)
     df = df.sort_index()
-    df = df.asfreq(frequency)
-    return df
+    return df.asfreq(freq)
 
 
-def load_add_cache(file_path, freq):
-    df_raw = load_dataset(file_path, freq)
-    df_agg = aggregate_ldtea(df_raw)
-    df = add_time_features(df_agg)
-    df.sort_index(inplace=True)
-    st.session_state["df"] = df
-    st.session_state["df_raw"] = df_raw
-    st.session_state["df_agg"] = df_agg
+def load_process_data(file_name, freq, df_name):
+    file_path = Path(settings.DATA_DIR / file_name)
+
+    if not file_path.exists():
+        logger.error(f"Arquivo {file_path} não encontrado")
+        st.error(f"Arquivo {file_path} não encontrado")
+        st.stop()
+
+    df = load_dataset(file_path, freq)
+    df.columns = df.columns.str.replace(" ", "_").str.lower()
+
+    if df_name == "df_prod":
+        df = aggregate_ldtea(df)
+        df = add_time_features(df)
+
+    return df.sort_index()
 
 
 def aggregate_ldtea(df):
     logger.info("Iniciando aggregate_ldtea")
 
     df_agg = df.copy()
-    df_agg["avg_ldtea"] = df[["LDTEA 1", "LDTEA 2", "LDTEA 3", "LDTEA 4"]].mean(axis=1)
-    df_agg["avg_uac"] = df_agg[["UAC 2", "UAC 3"]].mean(axis=1)
+    df_agg["ldtea_avg"] = df[["ldtea_1", "ldtea_2", "ldtea_3", "ldtea_4"]].mean(axis=1)
+    df_agg["uac_avg"] = df_agg[["uac_2", "uac_3"]].mean(axis=1)
     return df_agg
 
 
@@ -70,27 +77,17 @@ def run_app():
     st.title("Produção de energia solar UnB ⚡")
     st.subheader("Dataframes")
 
-    df = st.session_state["df"]
-    df_raw = st.session_state["df_raw"]
-    df_agg = st.session_state["df_agg"]
+    df_prod = st.session_state.df_prod
+    df_rad = st.session_state.df_rad
 
-    col1, col2 = st.columns(2)
-    with col1.expander("Produção de energia - dados brutos"):
-        st.dataframe(df_raw)
-
-    with col2.expander("Produção de energia - agregando os predios"):
-        st.dataframe(df_agg)
-
-    df_day = df.groupby("day").mean()["avg_ldtea"]
-    with col1.expander("Produção media de energia por dia"):
-        st.dataframe(df_day)
-
-    df_month_avg = df.groupby("month_name").sum()["avg_ldtea"]
-    with col2.expander("Produção media de energia por mes"):
-        st.dataframe(df_month_avg)
+    df_day = df_prod.groupby("day").mean()["ldtea_avg"]
+    df_month = df_prod.groupby("month_name").sum()["ldtea_avg"]
 
     with st.expander("Produção de energia - dataset completo"):
-        st.dataframe(df)
+        st.dataframe(df_prod, use_container_width=True)
+
+    with st.expander("Irradiância - dataset completo"):
+        st.dataframe(df_rad, use_container_width=True)
 
     # =================================================================================================================
     st.write(" ")
@@ -98,9 +95,9 @@ def run_app():
     st.subheader("Graficos")
     st.sidebar.subheader("Filtros")
 
-    cols = df_agg.columns
+    cols = settings.TARGET_COLS
     c1, _, c3, _ = st.columns([5, 2, 20, 2])
-    months = df["month_name"].unique()
+    months = df_prod["month_name"].unique()
     months = np.insert(months, 0, "todos")
 
     month = c1.selectbox(
@@ -113,11 +110,11 @@ def run_app():
         "Selecione os medidores",
         cols,
         key="y_columns",
-        default=["LDTEA 1"],
+        default=["ldtea_avg"],
         help="Selecione os medidores para visualizar os gráficos",
     )
 
-    df_month = df[df["month_name"] == month] if month != "todos" else df
+    df_month = df_prod[df_prod["month_name"] == month] if month != "todos" else df_prod
     with c3.container():
         init_date, end_date = st.slider(
             "Selecione o intervalo:",
@@ -146,10 +143,10 @@ def run_app():
     )
 
     c1, c2, *_ = st.columns(4)
-    start_date = c1.date_input("Data inicial", value=df.index.min())
-    end_date = c2.date_input("Data final", value=df.index.max())
+    start_date = c1.date_input("Data inicial", value=df_prod.index.min())
+    end_date = c2.date_input("Data final", value=df_prod.index.max())
 
-    df_date = df.loc[start_date:end_date]
+    df_date = df_prod.loc[start_date:end_date]
     plot_graph_line(
         df_date,
         df_date.index,
@@ -160,7 +157,7 @@ def run_app():
     st.write(" ")
     st.markdown("---")
 
-    df_day = df.groupby("day").mean()[y_column]
+    df_day = df_prod.groupby("day").mean()[y_column]
     df_day = df_day.round(2)
     plot_graph_bar(
         df_day, df_day.index, y_column, f"Produção media de energia por dia do mês({y_column})"
@@ -168,7 +165,7 @@ def run_app():
 
     c1, c2 = st.columns(2)
     with c1:
-        df_month = df.groupby("month").agg({y_column: "sum", "month_name": "first"})
+        df_month = df_prod.groupby("month").agg({y_column: "sum", "month_name": "first"})
         plot_graph_bar(
             df_month,
             df_month["month_name"],
@@ -177,7 +174,7 @@ def run_app():
         )
 
     with c2:
-        df_week = df.groupby("weekday").agg({y_column: "mean", "day_name": "first"})
+        df_week = df_prod.groupby("weekday").agg({y_column: "mean", "day_name": "first"})
         df_week = df_week.round(2)
         plot_graph_bar(
             df_week,
@@ -189,25 +186,22 @@ def run_app():
     st.write(" ")
     st.markdown("---")
 
-    plot_go_scatter(df, "date_time", y_column, f"Produção de Energia {y_column}")
+    plot_go_scatter(df_prod, "date_time", y_column, f"Produção de Energia {y_column}")
 
 
 def main():
     logger.info("Iniciando main")
     logo = Image.open(settings.ROOT_DIR / "assets" / "unb_logo.jpeg")
-
     st.sidebar.title("UnB - Solar Production")
     st.sidebar.image(logo, use_column_width=True)
 
     freq = settings.FREQUENCY
-    file_path = Path(settings.FILEPATH)
+    if "df_prod" not in st.session_state:
+        file_name = "energy_production_data.csv"
+        st.session_state.df_prod = load_process_data(file_name, freq, "df_prod")
 
-    if not file_path.exists():
-        logger.error("Arquivo %s não encontrado", file_path)
-        st.error(f"Arquivo {file_path} não encontrado")
-        return
-
-    if "data" not in st.session_state:
-        load_add_cache(file_path, freq)
+    if "df_rad" not in st.session_state:
+        file_name = "radiation_data.csv"
+        st.session_state.df_rad = load_process_data(file_name, freq, "df_rad")
 
     run_app()

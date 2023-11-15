@@ -15,9 +15,8 @@ START_DATE = pd.to_datetime("2023-06-01 00:00:00")
 SPLIT_DATE = pd.to_datetime("2023-09-15 23:59:59")
 END_DATE = pd.to_datetime("2023-09-30 23:59:59")
 
-FILEPATH = Path(DATA_DIR / "energy_production_data.csv")
 
-FEATURES = [
+TIME_FEATURES = [
     "hour",
     "day",
     "month",
@@ -25,6 +24,32 @@ FEATURES = [
     "weekend",
     "is_night",
 ]
+
+TARGET_COLS = [
+    "ldtea_avg",
+    "ldtea_1",
+    "ldtea_2",
+    "ldtea_3",
+    "ldtea_4",
+    "uac_avg",
+    "uac_2",
+    "uac_3",
+]
+
+IRRAD_FEATURES = [
+    "air_temp",
+    "dni",
+    "ghi",
+    "dhi",
+    "gti",
+    "clearsky_dhi",
+    "clearsky_ghi",
+    "clearsky_gti",
+    "clearsky_dni",
+    "cloud_opacity",
+]
+
+
 IS_WEEKEND_MAP = {0: "Dia da Semana", 1: "Fim de Semana"}
 
 DAY_MAPPING = {
