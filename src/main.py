@@ -1,10 +1,9 @@
-
 import logging
 import sys
 
 from dotenv import load_dotenv
 
-from app import run_app
+from app import main
 from config import config_logger, settings
 
 
@@ -17,6 +16,6 @@ if __name__ == "__main__":
         load_env(settings.ROOT_DIR / ".env")
         sys.path.append(str(settings.ROOT_DIR))
         config_logger()
-        run_app()
+        main()
     except Exception as e:
         logging.error(f"Erro ao iniciar app: {e}", exc_info=True)
