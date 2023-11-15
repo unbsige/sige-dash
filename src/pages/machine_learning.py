@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import streamlit as st
 import xgboost as xgb
 
-from src.config.settings import (
+from config.settings import (
     END_DATE,
     IRRAD_FEATURES,
     SPLIT_DATE,
@@ -12,7 +12,7 @@ from src.config.settings import (
     TARGET_COLS,
     TIME_FEATURES,
 )
-from src.metric_utils import calculate_metrics
+from metric_utils import calculate_metrics
 
 st.set_page_config(
     page_title="Machine Learning",
@@ -328,5 +328,4 @@ if exp_exec:
         # data=pickle.dumps(clf),
         # file_name="model.pkl",
     )
-
-
+ 
