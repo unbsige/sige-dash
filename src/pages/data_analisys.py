@@ -6,8 +6,12 @@ st.set_page_config(
     layout="wide",
 )
 st.title("Analise dos Dados")
-df = st.session_state.df
 
+if "df_prod" not in st.session_state:
+    st.stop()
+
+df_prod = st.session_state.df_prod
+df_rad = st.session_state.df_rad
 
 def sort_data(data):
     sort_col = st.selectbox("Select column to sort by", data.columns)
@@ -21,7 +25,7 @@ def remove_duplicates(data):
     )
 
     if columns:
-        df.drop_duplicates(subset=columns, inplace=True)
+        data.drop_duplicates(subset=columns, inplace=True)
         st.write("Duplicates removed successfully!")
 
 
@@ -63,19 +67,19 @@ col1, col2 = st.columns(2)
 st.sidebar.subheader("Filtros")
 
 with container:
-    st.write("Intervalo:", df.index.min().date(), df.index.max().date())
-    st.write("Tamanho do dataset:", df.shape)
-    st.write("Dados nulos:", df.isna().sum().sum())
-    st.write("Dados duplicados:", df.duplicated().sum())
+    st.write("Intervalo:", df_prod.index.min().date(), df_prod.index.max().date())
+    st.write("Tamanho do dataset:", df_prod.shape)
+    st.write("Dados nulos:", df_prod.isna().sum().sum())
+    st.write("Dados duplicados:", df_prod.duplicated().sum())
 
-    st.write(df.head())
+    st.write(df_prod.head())
 
 with col1:
-    all_columns = df.columns.to_list()
+    all_columns = df_prod.columns.to_list()
     st.write("Colunas do dataframe:", all_columns)
 
 with col2:
-    df_types = df.dtypes.reset_index().rename(columns={"index": "coluna", 0: "tipo"})
+    df_types = df_prod.dtypes.reset_index().rename(columns={"index": "coluna", 0: "tipo"})
     df_types["tipo"] = df_types["tipo"].astype(str)
     df_types.set_index("coluna", inplace=True)
     st.write("Tipos dos dados", df_types.to_dict()["tipo"])
@@ -87,7 +91,7 @@ selected_columns = st.sidebar.multiselect("Select columns", options=all_columns)
 if selected_columns:
     st.write("### Sub DataFrame")
     c1, c2 = st.columns(2)
-    sub_df = df[selected_columns]
+    sub_df = df_prod[selected_columns]
 
     st.write(f"Linhas: {sub_df.shape[0]}")
     st.write(f"Colunas: {sub_df.shape[1]}")

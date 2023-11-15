@@ -323,9 +323,9 @@ if exp_exec:
     )
     st.plotly_chart(fig, use_container_width=True)
 
-    st.download_button(
-        "Download Model",
+    # st.download_button(
+    #     "Download Model",
         # data=pickle.dumps(clf),
         # file_name="model.pkl",
-    )
+    # )
  
