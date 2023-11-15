@@ -1,19 +1,23 @@
 import logging
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
-import plotly.express as px
 import streamlit as st
+from PIL import Image
 
 from config import settings
+from plot_utils import plot_go_scatter, plot_graph_bar, plot_graph_line
 
 logger = logging.getLogger("solar_app")
 
 st.set_page_config(
-    page_title="Energy Production",
+    page_title="Produção de Energia",
     page_icon=":chart_with_upwards_trend:",
     layout="wide",
+    initial_sidebar_state="expanded",
 )
+
 
 @st.cache_resource
 def load_dataset(filepath, frequency):
@@ -50,40 +54,142 @@ def add_time_features(df):
     return df
 
 
-def plot_graph_line(df, x, y, title):
-    fig = px.line(df, x=x, y=y, template='simple_white', title=f'<b>{title}</b>')
-    fig.update_traces(line_color='#A27D4F')
-    # fig.update_traces(fill='tozeroy', fillcolor='#333333', opacity=0.1)
-    fig.update_layout(
-        xaxis=dict(showgrid=True, gridwidth=0.1),
-        yaxis=dict(showgrid=True, gridwidth=0.1)
-    )
-    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-    return fig
-
-
-def plot_graph_bar(df, x_column, y_column, title):
-    fig = px.bar(
-        df,
-        x=x_column,
-        y=y_column,
-        template='simple_white',
-        barmode="group",
-        title=f'<b>{title}</b>',
-        text=y_column,
-        hover_name=y_column
-    )
-    fig.update_traces(marker_color='#A27D4F', textposition='outside', hovertemplate='%{x}: %{y} kWh')
-    fig.update_traces(marker_color='#A27D4F')
-    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-    fig.update_yaxes(showgrid=True, gridwidth=0.1)
-    fig.update_xaxes(title_text="")
-    fig.update_yaxes(title_text="Energy Production (kWh)")
-    return fig
-
-
-def run_app():
+def run_app(df, df_raw, df_agg):
     logger.info("Iniciando run_app")
+
+    st.title("Produção de energia solar UnB ⚡")
+    st.subheader("Dataframes")
+
+    col1, col2 = st.columns(2)
+    with col1.expander("Produção de energia - dados brutos"):
+        st.dataframe(df_raw)
+
+    with col2.expander("Produção de energia - agregando os predios"):
+        st.dataframe(df_agg)
+
+    df_day = df.groupby("day").mean()["avg_ldtea"]
+    with col1.expander("Produção media de energia por dia"):
+        st.dataframe(df_day)
+
+    df_month_avg = df.groupby("month_name").sum()["avg_ldtea"]
+    with col2.expander("Produção media de energia por mes"):
+        st.dataframe(df_month_avg)
+
+    with st.expander("Produção de energia - dataset completo"):
+        st.dataframe(df)
+
+    # =================================================================================================================
+    st.write(" ")
+    st.markdown("---")
+    st.subheader("Graficos")
+    st.sidebar.subheader("Filtros")
+
+    cols = df_agg.columns
+    c1, _, c3, _ = st.columns([5, 2, 20, 2])
+    months = df["month_name"].unique()
+    months = np.insert(months, 0, "todos")
+
+    month = c1.selectbox(
+        "Selecione o mês",
+        months,
+        key="month",
+        help="Selecione o mês para visualizar os gráficos",
+    )
+    y_columns = c1.multiselect(
+        "Selecione os medidores",
+        cols,
+        key="y_columns",
+        default=["LDTEA 1"],
+        help="Selecione os medidores para visualizar os gráficos",
+    )
+
+    df_month = df[df["month_name"] == month] if month != "todos" else df
+    with c3.container():
+        init_date, end_date = st.slider(
+            "Selecione o intervalo:",
+            min_value=df_month.index.min().date(),
+            max_value=df_month.index.max().date(),
+            value=(df_month.index.min().date(), df_month.index.max().date()),
+            step=None,
+            format="DD/MM/YYYY",
+            help="Selecione o intervalo para visualizar os gráficos",
+        )
+    df_month = df_month.loc[init_date:end_date]
+    plot_graph_line(
+        df_month,
+        df_month.index,
+        y_columns,
+        "Produção de Energia",
+    )
+
+    # =================================================================================================================
+    st.write(" ")
+    st.markdown("---")
+
+    y_column = st.sidebar.selectbox(
+        "Selecione o medidor",
+        cols,
+        help="Selecione o medidor para visualizar os gráficos",
+    )
+
+    c1, c2, *_ = st.columns(4)
+    start_date = c1.date_input("Data inicial", value=df.index.min())
+    end_date = c2.date_input("Data final", value=df.index.max())
+
+    df_date = df.loc[start_date:end_date]
+    plot_graph_line(
+        df_date,
+        df_date.index,
+        y_column,
+        f"{y_column} - Produção de Energia: ({start_date} - {end_date})",
+    )
+
+    # =================================================================================================================
+    st.write(" ")
+    st.markdown("---")
+
+    df_day = df.groupby("day").mean()[y_column]
+    df_day = df_day.round(2)
+    plot_graph_bar(
+        df_day, df_day.index, y_column, f"Produção media de energia por dia do mês({y_column})"
+    )
+
+    c1, c2 = st.columns(2)
+    with c1:
+        df_month = df.groupby("month").agg({y_column: "sum", "month_name": "first"})
+        plot_graph_bar(
+            df_month,
+            df_month["month_name"],
+            y_column,
+            f"Produção total de energia por mês: {y_column}",
+        )
+
+    with c2:
+        df_week = df.groupby("weekday").agg({y_column: "mean", "day_name": "first"})
+        df_week = df_week.round(2)
+        plot_graph_bar(
+            df_week,
+            df_week["day_name"],
+            y_column,
+            f"Produção media de energia por dia da semana: {y_column}",
+        )
+
+    # =================================================================================================================
+    st.write(" ")
+    st.markdown("---")
+
+    plot_go_scatter(df, "date_time", y_column, f"Produção de Energia {y_column}")
+
+
+def main():
+    logger.info("Iniciando main")
+
+    logo = Image.open(settings.ROOT_DIR / "assets" / "unb_logo.jpeg")
+    # container = st.container()
+    # container.image(logo, width=200)
+
+    st.sidebar.title("UnB - Solar Production")
+    st.sidebar.image(logo, use_column_width=True)
 
     freq = settings.FREQUENCY
     file_path = Path(settings.FILEPATH)
@@ -99,73 +205,5 @@ def run_app():
     df.sort_index(inplace=True)
 
     st.session_state.df = df
-    st.session_state.file_path = file_path
 
-    # ============================================================================================================================
-
-    st.title("Energy Production ⚡")
-    st.subheader("Dataframes")
-
-    col1, col2 = st.columns(2)
-    with col1.expander("Energy Production raw data"):
-        st.dataframe(df_raw)
-
-    with col2.expander("Energy Production aggregated data"):
-        st.dataframe(df_agg)
-
-    df_day = df.groupby("day").mean()["avg_ldtea"]
-    with col1.expander("Avg Energy Production by day"):
-        st.dataframe(df_day)
-
-    df_month_avg = df.groupby("month_name").mean()["avg_ldtea"]
-    with col2.expander("Avg Energy Production by Month"):
-        st.dataframe(df_month_avg)
-
-    with st.expander("Energy Production data"):
-        st.dataframe(df)
-
-    # =================================================================================================================
-    st.write(" ")
-    st.markdown("---")
-    st.subheader("Graficos")
-    st.sidebar.subheader("Filtros")
-
-    cols = df_agg.columns
-    y_column = st.sidebar.selectbox(
-        "Selecione o medidor",
-        cols,
-        key="y_column",
-        help="Selecione o medidor para visualizar os gráficos"
-    )
-
-    c1, *_ = st.columns(4)
-    months = df["month_name"].unique()
-    month = c1.selectbox(
-        "Selecione o mês",
-        months,
-        key="month",
-        help="Selecione o mês para visualizar os gráficos"
-    )
-
-    df_month = df[df["month_name"] == month]
-    fig = plot_graph_line(df_month, df_month.index, y_column, f"Energy Production: {y_column}")
-    st.plotly_chart(fig, use_container_width=True)
-
-    st.write(" ")
-    c1, c2, *_ = st.columns(4)
-    start_date = c1.date_input("Data inicial", value=df.index.min())
-    end_date = c2.date_input("Data final", value=df.index.max())
-
-    df_date = df.loc[start_date:end_date]
-    fig = plot_graph_line(df_date, df_date.index, y_column, f"Energy Production {y_column}: {start_date} - {end_date}")
-    st.plotly_chart(fig, use_container_width=True)
-
-    # adicionar ao agrupamento um roud de duas casas
-    df_day = df.groupby("day").mean()[y_column]
-    df_day = df_day.round(2)
-    fig = plot_graph_bar(df_day, df_day.index, y_column, f"Producao media horaria {y_column} by Day")
-    st.plotly_chart(fig, use_container_width=True)
-
-    df_month = df.groupby("month").agg({y_column: 'sum', 'month_name': 'first'})
-    fig = plot_graph_bar(df_month, df_month["month_name"], y_column, f"Producao total de energia por mes: {y_column}")
-    st.plotly_chart(fig, use_container_width=True)
+    run_app(df, df_raw, df_agg)
