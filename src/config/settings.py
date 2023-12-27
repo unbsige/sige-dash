@@ -4,37 +4,23 @@ import pandas as pd
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 DATA_DIR = ROOT_DIR / "data"
+CUR_DATA_DIR = DATA_DIR / "current"
+BKP_DATA_DIR = DATA_DIR / "backups"
 LOG_DIR = ROOT_DIR / "logs"
 SRC_DIR = ROOT_DIR / "src"
 
-TARGET = "ldtea"
-DATE_COL = "date_time"
 FREQUENCY = "H"
+DATE_COL = "date_time"
+TARGET = "ldtea_avg"
+TARGET_AGG = ["ldtea_avg", "uac_avg"]
+TARGETS = ["ldtea1", "ldtea2", "ldtea3", "ldtea4", "uac2", "uac3"]
 
 START_DATE = pd.to_datetime("2023-06-01 00:00:00")
 SPLIT_DATE = pd.to_datetime("2023-09-15 23:59:59")
 END_DATE = pd.to_datetime("2023-09-30 23:59:59")
 
-
-TIME_FEATURES = [
-    "hour",
-    "day",
-    "month",
-    "weekday",
-    "weekend",
-    "is_night",
-]
-
-TARGET_COLS = [
-    "ldtea_avg",
-    "ldtea_1",
-    "ldtea_2",
-    "ldtea_3",
-    "ldtea_4",
-    "uac_avg",
-    "uac_2",
-    "uac_3",
-]
+LAGS = [1, 24, 48, 72, 96]
+WINDOWS = [3, 6, 12, 24]
 
 IRRAD_FEATURES = [
     "air_temp",
@@ -49,6 +35,76 @@ IRRAD_FEATURES = [
     "cloud_opacity",
 ]
 
+TIME_FEATURES = [
+    "hour",
+    "day",
+    "month",
+    "day_of_week",
+    "is_weekend",
+    "is_night",
+]
+
+CYCLIC_FEATURES = [
+    "hour_sin", 
+    "hour_cos", 
+    "day_sin", 
+    "day_cos", 
+    "day_of_week_sin", 
+    "day_of_week_cos",
+]
+
+SINCE_FEATURES = [
+    "time_since",
+    "time_since_2",]
+
+RADIAL_FEATURES = [
+    "rbf_0",
+    "rbf_1",
+    "rbf_2",
+    "rbf_3",
+    "rbf_4",
+    "rbf_5",
+    "rbf_6",
+    "rbf_7",
+    "rbf_8",
+    "rbf_9",
+    "rbf_10",
+    "rbf_11", 
+]
+
+LAG_FEATURES = [
+    "lag1",
+    "lag24",
+    "lag48",
+    "lag72",
+    "lag96",
+    "lag_mean",
+    "lag_median",
+    "lag_std"
+]
+
+WINDOWS_FEATURES = [
+    "window3_mean",
+    "window3_median",
+    "window3_std",
+    "window3_min",
+    "window3_max",
+    "window6_mean",
+    "window6_median",
+    "window6_std",
+    "window6_min",
+    "window6_max",
+    "window12_mean",
+    "window12_median",
+    "window12_std",
+    "window12_min",
+    "window12_max",
+    "window24_mean",
+    "window24_median",
+    "window24_std",
+    "window24_min",
+    "window24_max",
+]
 
 IS_WEEKEND_MAP = {0: "Dia da Semana", 1: "Fim de Semana"}
 
