@@ -4,51 +4,53 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 # MAPE
 def mean_absolute_percentage_error(y_true, y_pred):
-    y_true, y_pred = np.array(y_true), np.array(y_pred)
-    mape = np.abs((y_true[y_true != 0] - y_pred[y_true != 0]) / y_true[y_true != 0])
-    return np.mean(mape) * 100
+    y_true, y_pred = np.array(y_true).flatten(), np.array(y_pred).flatten()
+
+    if y_true.shape != y_pred.shape:
+        raise ValueError(f"y_true e y_pred devem ter o mesmo tamanho: {y_true.shape} != {y_pred.shape}")
+
+    mask = y_true != 0
+    return np.mean(np.abs((y_true[mask] - y_pred[mask]) / y_true[mask]))
 
 
 # sMAPE
 def symmetric_mean_absolute_percentage_error(y_true, y_pred):
-    smape = np.abs(y_pred - y_true) / (np.abs(y_pred) + np.abs(y_true))
-    return np.mean(smape) * 200
+    return np.mean(np.abs(y_pred - y_true) / (np.abs(y_pred) + np.abs(y_true)))
 
 
 # MASE
-def scaled_mean_absolute_error(y_true, y_pred, y_train):
-    n = y_train.shape[0]
-    d = np.abs(np.diff(y_train)).sum() / (n - 1)
-    errors = np.abs(y_pred - y_true)
-    return errors.mean() / d
+def mean_absolute_scaled_error(y_true, y_pred, y_train):
+    mae_model = mean_absolute_error(y_true, y_pred)
+
+    try:
+        hour_median_train = y_train.groupby(y_train.index.hour).median()
+        mapped_values = y_true.index.hour.map(hour_median_train)
+        mae_naive = mean_absolute_error(y_true, mapped_values)
+
+        return 0 if mae_naive == 0 else mae_model / mae_naive
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
 
 
-# RMSE
-def root_mean_squared_error(y_true, y_pred):
-    return np.sqrt(mean_squared_error(y_true, y_pred))
+def calculate_forecast_accuracy(y_true, y_pred, y_train):
+    y_true_day = y_true.between_time('06:00:00', '18:00:00')
+    y_pred_day = y_pred.between_time('06:00:00', '18:00:00')
+    y_train_day = y_train.between_time('06:00:00', '18:00:00')
 
-
-def print_calculate_metrics(y_true, y_pred, title):
-    acc = calculate_metrics(y_true, y_pred)
-
-    print("\n" + "=" * 120)
-    print(f"Resumo das métricas de precisão ({title})".center(120))
-    print("=" * 120 + "\n")
-    print(f"MAE: {acc['mae']:>8.2f} - Média da diferença entre previsões e valores reais.")
-    print( f"RMSE: {acc['rmse']:>8.2f} - Erro médio do modelo em relação aos valores observados.")
-    print(f"R²: {acc['r2']:>8.2f} - Coeficiente de determinação R².")
-    print(f"MSE: {acc['mse']:>8.2f} - Média dos quadrados das diferenças entre previstos e reais.")
-    print(f"MAPE: {acc['mape']:>7.2f}% - Desvio percentual médio das previsões em relação aos valores reais.")
-    print(f"sMAPE: {acc['smape']:>7.2f}% - Indica desvio percentual médio das previsões.")
-    print("=" * 120 + "\n")
-
-
-def calculate_metrics(y_true, y_pred):
     return {
         "mae": mean_absolute_error(y_true, y_pred),
-        "rmse": root_mean_squared_error(y_true, y_pred),
+        "rmse": mean_squared_error(y_true, y_pred, squared=False),
         "mse": mean_squared_error(y_true, y_pred),
         "r2": r2_score(y_true, y_pred),
         "mape": mean_absolute_percentage_error(y_true, y_pred),
-        "smape": symmetric_mean_absolute_percentage_error(y_true, y_pred),
+        "mase": mean_absolute_scaled_error(y_true, y_pred, y_train),
+        
+        "mae_day": mean_absolute_error(y_true_day, y_pred_day),
+        "rmse_day": mean_squared_error(y_true_day, y_pred_day, squared=False),
+        "mse_day": mean_squared_error(y_true_day, y_pred_day),
+        "r2_day": r2_score(y_true_day, y_pred_day),
+        "mape_day": mean_absolute_percentage_error(y_true_day, y_pred_day),
+        "mase_day": mean_absolute_scaled_error(y_true_day, y_pred_day, y_train_day),
     }
