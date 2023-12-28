@@ -39,7 +39,8 @@ def dashboard():
     with st.expander("Conjunto de dados Meteorológicos"):
         st.dataframe(df_wth, use_container_width=True)
 
-    # =================================================================================================================
+# =================================================================================================================
+
     st.write(" ")
     st.divider()
     st.subheader("Gráficos")
@@ -77,6 +78,7 @@ def dashboard():
             format="DD/MM/YYYY",
             help="Selecione o intervalo para visualizar os gráficos",
         )
+        
     df_month = df_month.loc[init_date:end_date]
     plot_graph_line(
         df_month,
@@ -108,8 +110,8 @@ def dashboard():
 
     st.write(" ")
     st.markdown("---")
+    df_day = df_prod.groupby("day")[y_column].mean()
 
-    df_day = df_prod.groupby("day").mean()[y_column]
     df_day = df_day.round(2)
     plot_graph_bar(
         df_day, df_day.index, y_column, f"Produção media de energia por dia do mês({y_column})"
