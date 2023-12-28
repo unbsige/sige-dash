@@ -5,11 +5,12 @@ import pandas as pd
 import streamlit as st
 
 from config import settings
+from feature_utils import create_features
 
 logger = logging.getLogger("solar_app")
 
 
-@st.cache_resource
+@st.cache_data
 def load_dataset(filepath, freq):
     logger.info(f"Carregando dados: {filepath}")
 
@@ -72,7 +73,9 @@ def load_data():
     freq = settings.FREQUENCY
     if "df_prod" not in st.session_state:
         file_name = "data_energy_p60m.csv"
-        st.session_state.df_prod = load_process_data(file_name, freq, "df_prod")
+        df_prod = load_process_data(file_name, freq, "df_prod")
+        df_prod = create_features(df_prod)
+        st.session_state.df_prod = df_prod
 
     if "df_rad" not in st.session_state:
         file_name = "data_radiation_p60m.csv"

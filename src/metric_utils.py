@@ -46,7 +46,7 @@ def calculate_forecast_accuracy(y_true, y_pred, y_train):
         "r2": r2_score(y_true, y_pred),
         "mape": mean_absolute_percentage_error(y_true, y_pred),
         "mase": mean_absolute_scaled_error(y_true, y_pred, y_train),
-        
+
         "mae_day": mean_absolute_error(y_true_day, y_pred_day),
         "rmse_day": mean_squared_error(y_true_day, y_pred_day, squared=False),
         "mse_day": mean_squared_error(y_true_day, y_pred_day),

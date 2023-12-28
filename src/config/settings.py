@@ -22,7 +22,7 @@ END_DATE = pd.to_datetime("2023-09-30 23:59:59")
 LAGS = [1, 24, 48, 72, 96]
 WINDOWS = [3, 6, 12, 24]
 
-IRRAD_FEATURES = [
+IRRADIATION_FEATURES = [
     "air_temp",
     "dni",
     "ghi",
@@ -33,6 +33,14 @@ IRRAD_FEATURES = [
     "clearsky_gti",
     "clearsky_dni",
     "cloud_opacity",
+]
+
+WEATHER_FEATURES = [
+    "temp", 
+    "pressure", 
+    "humidity", 
+    "wind_speed", 
+    "clouds"
 ]
 
 TIME_FEATURES = [
