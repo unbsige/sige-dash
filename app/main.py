@@ -43,16 +43,17 @@ def configure_logging(settings):
 
 def start_app():
 
-    home_page = st.Page("streamlit_app.py", title="Home", icon=":material/home:", )
-    eda_page = st.Page("./pages/preparation/data_analisys.py", title="Análise exploratória de dados", icon=":material/add_circle:",)
-    chart_page = st.Page("./pages/preparation/data_visualization.py", title="Visualizacao dos dados", icon=":material/add_circle:",)
-    ml_page = st.Page("./pages/model_ml/machine_learning.py", title="Aprendizado de maqina", icon=":material/delete:")
+    home_page = st.Page("streamlit_app.py", title="Home", icon="🏠")
+    ml_page = st.Page("./pages/model_ml/machine_learning.py", title="Treinar Modelo", icon="🤖")
+    data_analysis_page = st.Page("./pages/preparation/data_analysis.py", title="Análise de Dados", icon="📊")
 
     pg = st.navigation(
         {
             "Dashboard": [home_page],
-            "Preparation": [eda_page],
-            "Machine Learning": [chart_page, ml_page],
+            "Análise e Modelagem": [
+                data_analysis_page,
+                ml_page,
+            ],
         },
     )
     pg.run()
