@@ -23,7 +23,7 @@ st.set_page_config(
 logger.info("Iniciando main")
 logo = Image.open(settings.ROOT_DIR / "assets" / "unb_logo.jpeg")
 st.sidebar.title("UnB - Solar Production")
-st.sidebar.image(logo, use_column_width=True)
+st.sidebar.image(logo, use_container_width=True)
 
 load_data()
 dashboard()
