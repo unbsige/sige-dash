@@ -1,35 +1,45 @@
+import importlib
 import logging
 import os
 import sys
 from pathlib import Path
 
 import streamlit as st
-from dotenv import load_dotenv
 
 
 def setup_environment():
     root_dir = Path(__file__).parent.parent.resolve()
-    sys.path.append(str(root_dir))
-    sys.path.append(str(root_dir / "app"))
 
-    env_path = root_dir / ".env"
-    load_dotenv(env_path)
+    paths_to_add = [
+        str(root_dir),
+        str(root_dir / "app"),
+        str(root_dir / "config"),
+        str(root_dir / "fetch"),
+    ]
+
+    for path in paths_to_add:
+        if Path(path).exists() and path not in sys.path:
+            sys.path.insert(0, path)
 
     os.environ.setdefault("SETTINGS_MODULE", "config.settings")
     settings_module = os.environ["SETTINGS_MODULE"]
 
     try:
-        settings = __import__(settings_module, fromlist=[''])
+        settings = importlib.import_module(settings_module)
     except ImportError as e:
-        raise ImportError(f"Não foi possível importar as configurações '{settings_module}': {e}")
+        raise ImportError(
+            f"Não foi possível importar as configurações '{settings_module}': {e}"
+        )
 
-    return settings, root_dir
+    return settings
 
 
-def configure_logging(settings):
-    log_level = getattr(settings, 'LOG_LEVEL', logging.INFO)
-    log_format = getattr(settings, 'LOG_FORMAT', '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    log_file = getattr(settings, 'LOG_FILE', None)
+def setup_logging(settings):
+    log_level = getattr(settings, "LOG_LEVEL", logging.INFO)
+    log_format = getattr(
+        settings, "LOG_FORMAT", "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    log_file = getattr(settings, "LOG_FILE", None)
 
     logging.basicConfig(level=log_level, format=log_format)
 
@@ -42,10 +52,18 @@ def configure_logging(settings):
 
 
 def start_app():
-
     home_page = st.Page("streamlit_app.py", title="Home", icon="🏠")
-    ml_page = st.Page("./pages/model_ml/machine_learning.py", title="Treinar Modelo", icon="🤖")
-    data_analysis_page = st.Page("./pages/preparation/data_analysis.py", title="Análise de Dados", icon="📊")
+    ml_page = st.Page(
+        "./pages/model_ml/machine_learning.py",
+        title="Treinar Modelo",
+        icon="🤖",
+    )
+
+    data_analysis_page = st.Page(
+        "./pages/preparation/data_analysis.py",
+        title="Análise de Dados",
+        icon="📊",
+    )
 
     pg = st.navigation(
         {
@@ -61,8 +79,8 @@ def start_app():
 
 if __name__ == "__main__":
     try:
-        settings, root_dir = setup_environment()
-        configure_logging(settings)
+        settings = setup_environment()
+        setup_logging(settings)
         start_app()
 
     except Exception as e:
