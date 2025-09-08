@@ -19,18 +19,18 @@ def dashboard():
     df_rad_tempook = st.session_state.df_rad_tempook
 
     with st.expander("Conjunto de dados de Produção de energia"):
-        st.dataframe(df_prod[settings.TARGETS], use_container_width=True)
+        st.dataframe(df_prod[settings.TARGETS], width="stretch")
 
     with st.expander("Conjunto de dados Irradiação solar - Solcast"):
-        st.dataframe(df_rad_solcast, use_container_width=True)
+        st.dataframe(df_rad_solcast, width="stretch")
 
     with st.expander("Conjunto de dados Irradiação solar - TempoOK"):
-        st.dataframe(df_rad_tempook, use_container_width=True)
+        st.dataframe(df_rad_tempook, width="stretch")
 
     # with st.expander("Conjunto de dados Meteorológicos"):
-    #     st.dataframe(df_wth, use_container_width=True)
+    #     st.dataframe(df_wth, width='stretch')
 
-# =================================================================================================================
+    # =================================================================================================================
 
     st.write(" ")
     st.divider()
@@ -40,7 +40,7 @@ def dashboard():
     cols = settings.TARGETS
 
     c1, _, c3, _ = st.columns([5, 2, 20, 2])
-    months = df_prod["month_name"].unique() 
+    months = df_prod["month_name"].unique()
     months = np.insert(months, 0, "todos")
 
     month = c1.selectbox(
@@ -105,12 +105,18 @@ def dashboard():
 
     df_day = df_day.round(2)
     plot_graph_bar(
-        df_day, df_day.index, y_column, f"Produção media de energia por dia do mês({y_column})"
+        df_day,
+        df_day.index,
+        y_column,
+        f"Produção media de energia por dia do mês({y_column})",
     )
 
     c1, c2 = st.columns(2)
     with c1:
-        df_month = df_prod.groupby("month").agg({y_column: "sum", "month_name": "first"})
+        df_month = df_prod.groupby("month").agg({
+            y_column: "sum",
+            "month_name": "first",
+        })
         plot_graph_bar(
             df_month,
             df_month["month_name"],
@@ -119,7 +125,10 @@ def dashboard():
         )
 
     with c2:
-        df_week = df_prod.groupby("weekday").agg({y_column: "mean", "day_name": "first"})
+        df_week = df_prod.groupby("weekday").agg({
+            y_column: "mean",
+            "day_name": "first",
+        })
         df_week = df_week.round(2)
         plot_graph_bar(
             df_week,

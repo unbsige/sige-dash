@@ -20,10 +20,10 @@ LAT = -15.9895
 LON = -48.0444
 
 data = pd.DataFrame({
-    'lat': [-15.98895, -15.99051, -15.98955],
-    'lon': [-48.04485, -48.04425, -48.04545],
-    'name': ['UAC', 'LDTEA', 'UED'],
-    'power': [5000, 5000, 5000]
+    "lat": [-15.98895, -15.99051, -15.98955],
+    "lon": [-48.04485, -48.04425, -48.04545],
+    "name": ["UAC", "LDTEA", "UED"],
+    "power": [5000, 5000, 5000],
 })
 
 # Criar um mapa interativo com Plotly
@@ -42,26 +42,33 @@ fig = px.scatter_mapbox(
     size_max=10,
     title="Potência instalada",
     center={"lat": LAT, "lon": LON},
-
 )
 fig.update_layout(
     autosize=True,
     mapbox_style="open-street-map",
-    margin={"r": 0, "t": 0, "l": 0, "b": 0}
+    margin={"r": 0, "t": 0, "l": 0, "b": 0},
 )
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 
 # ============================================================================================================
-fig.add_trace(go.Scattermapbox(
-    lat=data['lat'].tolist() + [data['lat'].tolist()[0]],  # Adiciona o primeiro ponto ao final para fechar o polígono
-    lon=data['lon'].tolist() + [data['lon'].tolist()[0]],  # Adiciona o primeiro ponto ao final para fechar o polígono
-    mode='lines',
-    fill='toself',  # Isso preenche a área dentro do polígono
-    fillcolor='rgba(255, 0, 0, 0.2)',  # Define a cor e a transparência do preenchimento
-    line=dict(width=0),
-))
+fig.add_trace(
+    go.Scattermapbox(
+        lat=data["lat"].tolist()
+        + [
+            data["lat"].tolist()[0]
+        ],  # Adiciona o primeiro ponto ao final para fechar o polígono
+        lon=data["lon"].tolist()
+        + [
+            data["lon"].tolist()[0]
+        ],  # Adiciona o primeiro ponto ao final para fechar o polígono
+        mode="lines",
+        fill="toself",  # Isso preenche a área dentro do polígono
+        fillcolor="rgba(255, 0, 0, 0.2)",  # Define a cor e a transparência do preenchimento
+        line=dict(width=0),
+    )
+)
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 # ============================================================================================================
 
 st.stop()
@@ -133,7 +140,9 @@ with col1:
     st.write("Colunas do dataframe:", all_columns)
 
 with col2:
-    df_types = df_prod.dtypes.reset_index().rename(columns={"index": "coluna", 0: "tipo"})
+    df_types = df_prod.dtypes.reset_index().rename(
+        columns={"index": "coluna", 0: "tipo"}
+    )
     df_types["tipo"] = df_types["tipo"].astype(str)
     df_types.set_index("coluna", inplace=True)
     st.write("Tipos dos dados", df_types.to_dict()["tipo"])

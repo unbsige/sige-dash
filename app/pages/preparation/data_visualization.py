@@ -16,8 +16,8 @@ tab1, tab2 = st.tabs(["Tab 1", "Tab2"])
 tab1.write("this is tab 1")
 tab2.write("this is tab 2")
 
-st.title('Counter Example using Callbacks')
-if 'count' not in st.session_state:
+st.title("Counter Example using Callbacks")
+if "count" not in st.session_state:
     st.session_state.count = 0
 
 
@@ -29,8 +29,8 @@ def clear_counter():
     st.session_state.count = 0
 
 
-st.button('Increment', on_click=increment_counter)
-st.write('Count = ', st.session_state.count)
+st.button("Increment", on_click=increment_counter)
+st.write("Count = ", st.session_state.count)
 st.button("Clear", on_click=clear_counter)
 
 # ============================================================================================================
@@ -44,55 +44,55 @@ df_rad = st.session_state.df_rad
 def plot_graph_line(data, x, y, title):
     fig = px.line(data, x=x, y=y, title=title)
     fig.update_layout(title={"y": 0.9, "x": 0.5, "xanchor": "center", "yanchor": "top"})
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def plot_graph_bar(data, x, y, title):
     fig = px.bar(data, x=x, y=y, title=title)
     fig.update_layout(title={"y": 0.9, "x": 0.5, "xanchor": "center", "yanchor": "top"})
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def plot_graph_pie(data, x, y, title):
     fig = px.pie(data, values=y, names=x, title=title)
     fig.update_layout(title={"y": 0.9, "x": 0.5, "xanchor": "center", "yanchor": "top"})
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def plot_graph_scatter(data, x, y, title):
     fig = px.scatter(data, x=x, y=y, title=title)
     fig.update_layout(title={"y": 0.9, "x": 0.5, "xanchor": "center", "yanchor": "top"})
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def plot_graph_histogram(data, x, y, title):
     fig = px.histogram(data, x=x, y=y, title=title)
     fig.update_layout(title={"y": 0.9, "x": 0.5, "xanchor": "center", "yanchor": "top"})
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def plot_graph_box(data, x, y, title):
     fig = px.box(data, x=x, y=y, title=title)
     fig.update_layout(title={"y": 0.9, "x": 0.5, "xanchor": "center", "yanchor": "top"})
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def plot_graph_area(data, x, y, title):
     fig = px.area(data, x=x, y=y, title=title)
     fig.update_layout(title={"y": 0.9, "x": 0.5, "xanchor": "center", "yanchor": "top"})
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def plot_graph_heatmap(data, x, y, title):
     fig = px.imshow(data, x=x, y=y, title=title)
     fig.update_layout(title={"y": 0.9, "x": 0.5, "xanchor": "center", "yanchor": "top"})
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def plot_graph_violin(data, x, y, title):
     fig = px.violin(data, x=x, y=y, title=title)
     fig.update_layout(title={"y": 0.9, "x": 0.5, "xanchor": "center", "yanchor": "top"})
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def plot_graph(data, x, y, title, graph_type):

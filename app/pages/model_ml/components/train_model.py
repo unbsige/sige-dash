@@ -1,11 +1,11 @@
-import xgboost as xgb
-import plotly.graph_objects as go
-import pandas as pd
 import lightgbm as lgb
+import pandas as pd
+import plotly.graph_objects as go
 import streamlit as st
-from pages.model_ml.components.physical_model import PhysicalModel
-from metric_utils import calculate_forecast_accuracy
+import xgboost as xgb
 from config.settings import IRRADIATION_FEATURES
+from metric_utils import calculate_forecast_accuracy
+from pages.model_ml.components.physical_model import PhysicalModel
 
 
 def train_evaluate_model(model_type, datasets, target):
@@ -26,7 +26,6 @@ def train_evaluate_model(model_type, datasets, target):
 
 def train_xgboost(df_train, df_test, target):
     with st.spinner("Treinando o modelo XGBoost..."):
-
         x_train = df_train.drop(columns=[target])
         y_train = df_train[target]
         x_test = df_test.drop(columns=[target])
@@ -45,7 +44,9 @@ def train_xgboost(df_train, df_test, target):
     y_pred = model.predict(x_test)
     y_pred = pd.DataFrame(y_pred, index=df_test.index, columns=["y_pred"])
     y_pred["y_true"] = df_test[target]
-    metrics = calculate_forecast_accuracy(y_pred["y_true"], y_pred["y_pred"], df_train[target])
+    metrics = calculate_forecast_accuracy(
+        y_pred["y_true"], y_pred["y_pred"], df_train[target]
+    )
 
     st.write("XGBoost treinado com sucesso!")
     return y_pred, metrics
@@ -53,7 +54,6 @@ def train_xgboost(df_train, df_test, target):
 
 def train_lightgbm(df_train, df_test, target):
     with st.spinner("Treinando o modelo LightGBM..."):
-
         x_train = df_train.drop(columns=[target])
         y_train = df_train[target]
         x_test = df_test.drop(columns=[target])
@@ -72,7 +72,9 @@ def train_lightgbm(df_train, df_test, target):
     y_pred = model.predict(x_test)
     y_pred = pd.DataFrame(y_pred, index=df_test.index, columns=["y_pred"])
     y_pred["y_true"] = df_test[target]
-    metrics = calculate_forecast_accuracy(y_pred["y_true"], y_pred["y_pred"], df_train[target])
+    metrics = calculate_forecast_accuracy(
+        y_pred["y_true"], y_pred["y_pred"], df_train[target]
+    )
 
     st.write("LightGBM treinado com sucesso!")
     return y_pred, metrics
@@ -92,14 +94,18 @@ def train_physical_model(df_train, df_test, target):
             errors.append("O modelo físico requer recurso:'ghi' ou 'gti'")
 
         if errors:
-            error_message = "Erro(s) ao treinar o modelo físico:\n" + "\n".join(f"- {error}" for error in errors)
+            error_message = "Erro(s) ao treinar o modelo físico:\n" + "\n".join(
+                f"- {error}" for error in errors
+            )
             st.error(error_message)
             return None
 
         if "ghi" in columns and "gti" in columns:
             df_train = df_train.drop(columns=["gti"])
             df_test = df_test.drop(columns=["gti"])
-            st.info("As colunas 'ghi' e 'gti' estavam presentes. A coluna 'gti' foi removida para evitar redundância.")
+            st.info(
+                "As colunas 'ghi' e 'gti' estavam presentes. A coluna 'gti' foi removida para evitar redundância."
+            )
 
         model = PhysicalModel(model_type)
         X_train = df_train.drop(columns=exclude_features).values.T
@@ -115,7 +121,9 @@ def train_physical_model(df_train, df_test, target):
         y_pred["y_true"] = df_test[target]
 
         st.write("Modelo físico treinado com sucesso!")
-        metrics = calculate_forecast_accuracy(y_pred["y_true"], y_pred["y_pred"], df_train[target])
+        metrics = calculate_forecast_accuracy(
+            y_pred["y_true"], y_pred["y_pred"], df_train[target]
+        )
         return y_pred, metrics
 
 
@@ -123,22 +131,26 @@ def plot_feature_importance(model, lower_bound=0.1):
     model_name = model.__class__.__name__
 
     feature_importance = get_feature_importance(model)
-    feature_importance = feature_importance[feature_importance['percentage'] > lower_bound]
-    plot_data = feature_importance.sort_values('percentage', ascending=True)
-    
+    feature_importance = feature_importance[
+        feature_importance["percentage"] > lower_bound
+    ]
+    plot_data = feature_importance.sort_values("percentage", ascending=True)
+
     with st.expander("Importância dos Recursos ", expanded=True):
         fig = go.Figure()
-        fig.add_trace(go.Bar(
-            y=plot_data['feature'],
-            x=plot_data['percentage'],
-            orientation='h',
-            marker=dict(
-                color=plot_data['percentage'],
-                colorscale='Viridis',
-                line=dict(color='rgba(255, 255, 255, 0.5)', width=0.5)
-            ),
-            opacity=0.8
-        ))
+        fig.add_trace(
+            go.Bar(
+                y=plot_data["feature"],
+                x=plot_data["percentage"],
+                orientation="h",
+                marker=dict(
+                    color=plot_data["percentage"],
+                    colorscale="Viridis",
+                    line=dict(color="rgba(255, 255, 255, 0.5)", width=0.5),
+                ),
+                opacity=0.8,
+            )
+        )
 
         fig.update_layout(
             title=f"Importância dos Recursos ({model_name})",
@@ -151,31 +163,27 @@ def plot_feature_importance(model, lower_bound=0.1):
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)",
             xaxis=dict(
-                gridcolor="rgba(255, 255, 255, 0.1)",
-                gridwidth=0.5,
-                color="white"
+                gridcolor="rgba(255, 255, 255, 0.1)", gridwidth=0.5, color="white"
             ),
             yaxis=dict(
-                gridcolor="rgba(255, 255, 255, 0.1)",
-                gridwidth=0.5,
-                color="white"
+                gridcolor="rgba(255, 255, 255, 0.1)", gridwidth=0.5, color="white"
             ),
             margin=dict(l=20, r=20, t=60, b=20),
-            height=max(350, len(plot_data) * 30)  # Ajuste dinâmico da altura
+            height=max(350, len(plot_data) * 30),  # Ajuste dinâmico da altura
         )
 
-        for i, value in enumerate(plot_data['percentage']):
+        for i, value in enumerate(plot_data["percentage"]):
             fig.add_annotation(
                 x=value,
                 y=i,
                 text=f"{value:.1f}%",
                 showarrow=False,
-                xanchor='left',
+                xanchor="left",
                 xshift=10,
-                font=dict(size=12, color="white")
+                font=dict(size=12, color="white"),
             )
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
 
 def get_feature_importance(model):
@@ -190,10 +198,12 @@ def get_feature_importance(model):
 
     features_importance = pd.DataFrame({
         "feature": feature_names,
-        "importance": importance
+        "importance": importance,
     })
 
     total_importance = features_importance["importance"].sum()
-    features_importance["percentage"] = (features_importance["importance"] / total_importance) * 100
+    features_importance["percentage"] = (
+        features_importance["importance"] / total_importance
+    ) * 100
 
     return features_importance.sort_values("percentage", ascending=False)

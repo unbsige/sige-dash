@@ -56,10 +56,7 @@ def add_radial_basics_function(df):
     )
 
     rbf.fit(df)
-    df_rbf = pd.DataFrame(
-        index=df.index,
-        data=rbf.transform(df)
-    )
+    df_rbf = pd.DataFrame(index=df.index, data=rbf.transform(df))
 
     df_rbf.columns = [f"rbf_{col}" for col in df_rbf.columns if str(col).isdigit()]
     return pd.concat([df, df_rbf], axis=1)

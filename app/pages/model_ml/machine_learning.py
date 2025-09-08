@@ -1,11 +1,10 @@
-import streamlit as st
 import plotly.graph_objects as go
+import streamlit as st
 from feature_utils import create_features
 from load_data import load_data
 from pages.model_ml.components.features import select_features
 from pages.model_ml.components.plants import select_plant
 from pages.model_ml.components.split_dataset import split_train_test
-
 from pages.model_ml.components.train_model import train_evaluate_model
 
 st.set_page_config(
@@ -29,13 +28,13 @@ df_rad_solcast = st.session_state.df_rad_solcast
 df_rad_tempook = st.session_state.df_rad_tempook
 
 with st.expander("⚡ :green[Dados de Produção de energia]"):
-    st.dataframe(df_prod, use_container_width=True)
+    st.dataframe(df_prod, width="stretch")
 
 with st.expander("☀️ :green[Dados Irradiação solar - Solcast]"):
-    st.dataframe(df_rad_solcast, use_container_width=True)
+    st.dataframe(df_rad_solcast, width="stretch")
 
 with st.expander("☀️ :green[Dados Irradiação solar - TempoOK]"):
-    st.dataframe(df_rad_tempook, use_container_width=True)
+    st.dataframe(df_rad_tempook, width="stretch")
 
 # ==================================================================================================================
 st.write(" ")
@@ -93,47 +92,46 @@ for col, (key, value) in zip(cols, metrics.items()):
         label_visibility="collapsed",
         value=round(value, 4),
         delta=f"{key.upper()}",
-        delta_color="normal"
+        delta_color="normal",
     )
 
 graph = [
     go.Scatter(
         x=df_pred.index,
         y=df_pred["y_true"],
-        mode='lines',
+        mode="lines",
         line=dict(color="darkcyan"),
-        name='test set'
+        name="test set",
     ),
-
     go.Scatter(
         x=df_pred.index,
         y=df_pred["y_pred"],
-        mode='lines',
+        mode="lines",
         line=dict(color="coral"),
-        name='predict'
-    )
+        name="predict",
+    ),
 ]
 layout = dict(
     height=600,
     title={
-        "text": f"Produção de Energia: previsão com modelo {model}", 
+        "text": f"Produção de Energia: previsão com modelo {model}",
         "y": 0.9,
         "x": 0.5,
         "xanchor": "center",
         "yanchor": "top",
-        "font": {"size": 20}
+        "font": {"size": 20},
     },
     yaxis=dict(title="Produção de Energia (kWh)"),
     xaxis=dict(
         title="",
-        type='date',
+        type="date",
         rangeslider=dict(visible=True),
         rangeselector=dict(
             buttons=[
-                dict(count=1, label='1d', step='day', stepmode='backward'),
-                dict(count=3, label='3d', step='day', stepmode='backward'),
-                dict(count=7, label='1s', step='day', stepmode='backward'),
-                dict(step='all'),
+                dict(count=1, label="1d", step="day", stepmode="backward"),
+                dict(count=3, label="3d", step="day", stepmode="backward"),
+                dict(count=7, label="1s", step="day", stepmode="backward"),
+                dict(step="all"),
             ],
             font=dict(size=13),
             bordercolor="#0072B2",
@@ -143,4 +141,4 @@ layout = dict(
     ),
 )
 fig = go.Figure(data=graph, layout=layout)
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
