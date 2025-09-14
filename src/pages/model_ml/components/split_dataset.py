@@ -1,6 +1,7 @@
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
+
 from config.settings import END_DATE, SPLIT_DATE_EVAL, START_DATE
 
 
@@ -49,20 +50,20 @@ def show_split_graph(df_train, df_test, target, split_date):
                     x=df_train.index,
                     y=df_train[target],
                     mode="lines",
-                    line=dict(color="darkcyan"),
+                    line={"color": "darkcyan"},
                     name="train set",
                 ),
                 go.Scatter(
                     x=df_test.index,
                     y=df_test[target],
                     mode="lines",
-                    line=dict(color="coral"),
+                    line={"color": "coral"},
                     name="test set",
                 ),
             ]
-            layout = dict(
-                height=600,
-                title={
+            layout = {
+                "height": 600,
+                "title": {
                     "text": "Produção de Energia: divisão dos dados em treino e teste",
                     "y": 0.9,
                     "x": 0.5,
@@ -70,30 +71,30 @@ def show_split_graph(df_train, df_test, target, split_date):
                     "yanchor": "top",
                     "font": {"size": 20},
                 },
-                yaxis=dict(title="Produção de Energia (kWh)"),
-                xaxis=dict(
-                    title="",
-                    type="date",
-                    rangeslider=dict(visible=True),
-                    rangeselector=dict(
-                        buttons=[
-                            dict(count=1, label="1d", step="day", stepmode="backward"),
-                            dict(count=7, label="1w", step="day", stepmode="backward"),
-                            dict(
-                                count=3, label="3m", step="month", stepmode="backward"
-                            ),
-                            dict(
-                                count=15, label="test", step="day", stepmode="backward"
-                            ),
-                            dict(step="all"),
+                "yaxis": {"title": "Produção de Energia (kWh)"},
+                "xaxis": {
+                    "title": "",
+                    "type": "date",
+                    "rangeslider": {"visible": True},
+                    "rangeselector": {
+                        "buttons": [
+                            {"count": 1, "label": "1d", "step": "day", "stepmode": "backward"},
+                            {"count": 7, "label": "1w", "step": "day", "stepmode": "backward"},
+                            {
+                                "count": 3, "label": "3m", "step": "month", "stepmode": "backward"
+                            },
+                            {
+                                "count": 15, "label": "test", "step": "day", "stepmode": "backward"
+                            },
+                            {"step": "all"},
                         ],
-                        font=dict(size=13),
-                        bordercolor="#0072B2",
-                        borderwidth=1,
-                        activecolor="#0072B2",
-                    ),
-                ),
-            )
+                        "font": {"size": 13},
+                        "bordercolor": "#0072B2",
+                        "borderwidth": 1,
+                        "activecolor": "#0072B2",
+                    },
+                },
+            }
             fig = go.Figure(data=graph, layout=layout)
 
             fig.add_vline(
@@ -111,7 +112,7 @@ def show_split_graph(df_train, df_test, target, split_date):
                 arrowhead=5,
                 bgcolor="steelblue",
                 bordercolor="#0072B2",
-                font=dict(size=14),
+                font={"size": 14},
                 hovertext="Divisão dados de Treino e Teste",
                 ax=60,
                 ay=-30,

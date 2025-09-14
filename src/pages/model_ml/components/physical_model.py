@@ -8,15 +8,15 @@ class PhysicalModel:
         self.params = None
 
     def _linear_irradiance(self, X, a, b):
-        E, _ = X            
+        E, _ = X
         return a + b * E
 
     def _linear_weather(self, X, a, b, c, d, e):
-        E, T = X                   
-        return a + b * E + c * T   
+        E, T = X
+        return a + b * E + c * T
 
     def _nonlinear(self, X, a, b, c, d):
-        E, T = X 
+        E, T = X
         return a * E * (1 - b * (T + E / 800 * (c - 20) - 25) - d * np.log(E + 1e-10))
 
     def fit(self, X, y):

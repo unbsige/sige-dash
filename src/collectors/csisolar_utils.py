@@ -2,7 +2,7 @@ import pandas as pd
 import pytz
 from plotly import graph_objects as go
 
-from app.config.settings import INVERTERS
+from src.config.settings import INVERTERS
 
 BR_TZ = pytz.timezone("America/Sao_Paulo")
 UTC_TZ = pytz.timezone("UTC")
@@ -76,16 +76,13 @@ def process_power_records(response_data, timezone_br=BR_TZ):
 
     rec_df["date_time"] = pd.to_datetime(rec_df["dateTime"], unit="s", utc=True)
     rec_df["date_time"] = rec_df["date_time"].dt.tz_convert(timezone_br)
-    rec_df.set_index("date_time", inplace=True)
-    rec_df.sort_index(inplace=True)
+    rec_df = rec_df.set_index("date_time")
+    rec_df = rec_df.sort_index()
 
     columns_to_drop = ["dateTime", "timeZoneOffset"]
-    rec_df.drop(columns=columns_to_drop, inplace=True)
+    rec_df = rec_df.drop(columns=columns_to_drop)
 
-    rec_df.rename(
-        columns={"generationPower": "pv_power", "generationCapacity": "pv_capacity"},
-        inplace=True,
-    )
+    rec_df = rec_df.rename(columns={"generationPower": "pv_power", "generationCapacity": "pv_capacity"})
     rec_df["pv_power"] = rec_df["pv_power"] / 1000.0
 
     print(f"Total de registros: {len(rec_df)}")
@@ -104,25 +101,22 @@ def process_statistics(response_data):
     )
 
     stats_df = stats_df_raw.copy()
-    stats_df.rename(
+    stats_df = stats_df.rename(
         columns={
             "acceptDay": "date",
             "fullPowerHoursDay": "full_power_hours",
             "generationValue": "generation_value",
             "incomeValue": "income_value",
         },
-        inplace=True,
     )
     stats_df["date"] = pd.to_datetime(stats_df["date"], format="%Y%m%d").dt.date
-    stats_df.set_index("date", inplace=True)
-    stats_df.sort_index(inplace=True)
+    stats_df = stats_df.set_index("date")
+    stats_df = stats_df.sort_index()
 
     return stats_df
 
 
-def plot_pv_power_time_series(
-    df, title=None, power_column="pv_power", width=1800, height=500
-):
+def plot_pv_power_time_series(df, title=None, power_column="pv_power", width=1800, height=500):
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(

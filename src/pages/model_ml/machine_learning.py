@@ -1,5 +1,6 @@
 import plotly.graph_objects as go
 import streamlit as st
+
 from feature_utils import create_features
 from load_data import load_data
 from pages.model_ml.components.features import select_features
@@ -86,7 +87,7 @@ st.write(f"### Resultados: Previsão de Produção de Energia - {model}")
 # ==================================================================================================================
 
 cols = st.columns(4)
-for col, (key, value) in zip(cols, metrics.items()):
+for col, (key, value) in zip(cols, metrics.items(), strict=False):
     col.metric(
         label=f"{key.upper()}",
         label_visibility="collapsed",
@@ -100,20 +101,21 @@ graph = [
         x=df_pred.index,
         y=df_pred["y_true"],
         mode="lines",
-        line=dict(color="darkcyan"),
+        line={"color": "darkcyan"},
         name="test set",
     ),
     go.Scatter(
         x=df_pred.index,
         y=df_pred["y_pred"],
         mode="lines",
-        line=dict(color="coral"),
+        line={"color": "coral"},
         name="predict",
     ),
 ]
-layout = dict(
-    height=600,
-    title={
+
+layout = {
+    "height": 600,
+    "title": {
         "text": f"Produção de Energia: previsão com modelo {model}",
         "y": 0.9,
         "x": 0.5,
@@ -121,24 +123,25 @@ layout = dict(
         "yanchor": "top",
         "font": {"size": 20},
     },
-    yaxis=dict(title="Produção de Energia (kWh)"),
-    xaxis=dict(
-        title="",
-        type="date",
-        rangeslider=dict(visible=True),
-        rangeselector=dict(
-            buttons=[
-                dict(count=1, label="1d", step="day", stepmode="backward"),
-                dict(count=3, label="3d", step="day", stepmode="backward"),
-                dict(count=7, label="1s", step="day", stepmode="backward"),
-                dict(step="all"),
+    "yaxis": {"title": "Produção de Energia (kWh)"},
+    "xaxis": {
+        "title": "",
+        "type": "date",
+        "rangeslider": {"visible": True},
+        "rangeselector": {
+            "buttons": [
+                {"count": 1, "label": "1d", "step": "day", "stepmode": "backward"},
+                {"count": 3, "label": "3d", "step": "day", "stepmode": "backward"},
+                {"count": 7, "label": "1s", "step": "day", "stepmode": "backward"},
+                {"step": "all"},
             ],
-            font=dict(size=13),
-            bordercolor="#0072B2",
-            borderwidth=1,
-            activecolor="#0072B2",
-        ),
-    ),
-)
+            "font": {"size": 13},
+            "bordercolor": "#0072B2",
+            "borderwidth": 1,
+            "activecolor": "#0072B2",
+        },
+    },
+}
+
 fig = go.Figure(data=graph, layout=layout)
 st.plotly_chart(fig, width="stretch")

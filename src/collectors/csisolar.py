@@ -1,9 +1,8 @@
 from datetime import datetime
 
-from config import BASE_URL, PASSWORD_UED, USERNAME_UED
-
-from app.collectors.csisolar_auth import CSISolarOAuthClient
-from app.collectors.csisolar_client import CSISolarClient
+from config import BASE_URL, DEVICE_ID_UED, PASSWORD_UED, USERNAME_UED
+from src.collectors.csisolar_auth import CSISolarOAuthClient
+from src.collectors.csisolar_client import CSISolarClient
 
 oauth_client = CSISolarOAuthClient()
 response_data = oauth_client.login(USERNAME_UED, PASSWORD_UED)
@@ -31,6 +30,4 @@ print(status)
 
 start_date = datetime(2022, 1, 1)
 end_date = datetime(2025, 9, 1)
-response_data = client_csi.get_power_range(
-    DEVICE_ID, start_date, end_date, granularity="daily"
-)
+response_data = client_csi.get_power_range(DEVICE_ID_UED, start_date, end_date, granularity="daily")

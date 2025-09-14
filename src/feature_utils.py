@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
-from config import settings
 from sklego.preprocessing import RepeatingBasisFunction
+
+from config import settings
 
 
 def create_features(df, target, lags=settings.LAGS, windows=settings.WINDOWS):

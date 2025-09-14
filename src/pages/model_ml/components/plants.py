@@ -1,5 +1,6 @@
 import streamlit as st
-from config.settings import INVERTER_MAPPING, PLANT_GROUPS, PLANTS
+
+from config.settings import INVERTER_MAPPING, PLANTS, PLANT_GROUPS
 
 
 def get_plant_inverters(plant_name):

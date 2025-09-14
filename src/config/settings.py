@@ -20,24 +20,37 @@ GEOLOCATION = {
     "lon": env.float("LON", -47.8645),
 }
 
+# DEVICE_ID_ICS = 1735533
+# DEVICE_ID_IPOL_IREL = 1734657
+# DEVICE_ID_UED = 1481452
+# DEVICE_ID_LDTEA_MASP = 1481327
+# DEVICE_ID_FCE_UED = 1481495
+
+# https://webmonitoring-gl.csisolar.com/home/maintain-s/operating/system/
+# https://webmonitoring-gl.csisolar.com/home/maintain-s/history/power/1735533/stats/month?year=2025&month=9 (dia a dia - mes completo)
+# https://webmonitoring-gl.csisolar.com/home/maintain-s/history/power/1735533/record?year=2025&month=9&day=7 (a cada 5 minutos - dia especifico)
+# https://webmonitoring-gl.csisolar.com/home/maintain-s/history/power/1481452/stats/year?year=2025 (mes a mes - ano completo)
+# https://webmonitoring-gl.csisolar.com/home/maintain-s/history/power/1481452/stats/total (ano a ano - desde o inicio)
+# https://webmonitoring-gl.csisolar.com/home/region-s/weather/record/month?regionNationId=33&year=2025&month=09&timezone=America%2FSao_Paulo&lan=pt
 
 INVERTERS = {
     "canadian": {
         "base_url": "https://webmonitoring-gl.csisolar.com",
-        "url_login": "https://webmonitoring-gl.csisolar.com/home/oauth-s/oauth/token",
-        "url_daily": "https://webmonitoring-gl.csisolar.com/home/maintain-s/history/power/{{device_id}}/record",
-        "url_monthly": "https://webmonitoring-gl.csisolar.com/home/maintain-s/history/power/{{device_id}}/record/monthly",
+        "url_login": "/home/login",
+        "url_daily": "/home/maintain-s/history/power/{{device_id}}/record",
+        "url_monthly": "/home/maintain-s/history/power/{{device_id}}/stats/monthly",
+        "url_yearly": "/home/maintain-s/history/power/{{device_id}}/stats/yearly",
     }
 }
 
 CREDENTIALS = {
     "ued": {
-        "username": env.str("USERNAME_FCTE_UED"),
-        "password": env.str("PASSWORD_FCTE_UED"),
+        "username": env.str("USERNAME_UED"),
+        "password": env.str("PASSWORD_UED"),
     },
     "ldtea": {
-        "username": env.str("USERNAME_FCTE_LDTEA"),
-        "password": env.str("PASSWORD_FCTE_LDTEA"),
+        "username": env.str("USERNAME_LDTEA"),
+        "password": env.str("PASSWORD_LDTEA"),
     },
     "fce_ued": {
         "username": env.str("USERNAME_FCE_UED"),
@@ -51,20 +64,19 @@ PLANT_UED = {
     "installed_capacity": 125.0,
     "inverter_model": "canadian",
     "credentials": CREDENTIALS["ued"],
-    "device_id": env.str("DEVICE_ID_FCTE_UED"),
+    "device_id": env.str("DEVICE_ID_UED"),
     "latitude": env.str("LAT"),
     "longitude": env.str("LON"),
     "devices": [
         {
-            "id": env.str("DEVICE_ID_FCTE_UED"),
-            "name": "UED 2",
+            "id": env.str("DEVICE_ID_UED"),
+            "name": "UED",
             "capacity": 62.5,
             "model": "CSI-50KTL",
             "serial_number": "",
         },
     ],
 }
-
 
 DATA_DIR = ROOT_DIR / "data"
 CUR_DATA_DIR = DATA_DIR / "current"

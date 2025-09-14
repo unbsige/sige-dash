@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 import xgboost as xgb
+
 from config.settings import IRRADIATION_FEATURES
 from metric_utils import calculate_forecast_accuracy
 from pages.model_ml.components.physical_model import PhysicalModel
@@ -143,11 +144,11 @@ def plot_feature_importance(model, lower_bound=0.1):
                 y=plot_data["feature"],
                 x=plot_data["percentage"],
                 orientation="h",
-                marker=dict(
-                    color=plot_data["percentage"],
-                    colorscale="Viridis",
-                    line=dict(color="rgba(255, 255, 255, 0.5)", width=0.5),
-                ),
+                marker={
+                    "color": plot_data["percentage"],
+                    "colorscale": "Viridis",
+                    "line": {"color": "rgba(255, 255, 255, 0.5)", "width": 0.5},
+                },
                 opacity=0.8,
             )
         )
@@ -156,19 +157,15 @@ def plot_feature_importance(model, lower_bound=0.1):
             title=f"Importância dos Recursos ({model_name})",
             xaxis_title="Importância (%)",
             yaxis_title="Variável",
-            font=dict(family="Arial", size=14, color="white"),
+            font={"family": "Arial", "size": 14, "color": "white"},
             title_font_size=24,
             xaxis_title_font_size=16,
             yaxis_title_font_size=16,
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(
-                gridcolor="rgba(255, 255, 255, 0.1)", gridwidth=0.5, color="white"
-            ),
-            yaxis=dict(
-                gridcolor="rgba(255, 255, 255, 0.1)", gridwidth=0.5, color="white"
-            ),
-            margin=dict(l=20, r=20, t=60, b=20),
+            xaxis={"gridcolor": "rgba(255, 255, 255, 0.1)", "gridwidth": 0.5, "color": "white"},
+            yaxis={"gridcolor": "rgba(255, 255, 255, 0.1)", "gridwidth": 0.5, "color": "white"},
+            margin={"l": 20, "r": 20, "t": 60, "b": 20},
             height=max(350, len(plot_data) * 30),  # Ajuste dinâmico da altura
         )
 
@@ -180,7 +177,7 @@ def plot_feature_importance(model, lower_bound=0.1):
                 showarrow=False,
                 xanchor="left",
                 xshift=10,
-                font=dict(size=12, color="white"),
+                font={"size": 12, "color": "white"},
             )
 
         st.plotly_chart(fig, width="stretch")
@@ -202,8 +199,5 @@ def get_feature_importance(model):
     })
 
     total_importance = features_importance["importance"].sum()
-    features_importance["percentage"] = (
-        features_importance["importance"] / total_importance
-    ) * 100
-
+    features_importance["percentage"] = (features_importance["importance"] / total_importance) * 100
     return features_importance.sort_values("percentage", ascending=False)

@@ -3,7 +3,6 @@ import json
 
 import brotli
 import httpx
-from config.settings import INVERTERS
 
 
 class CSISolarOAuthClient:
@@ -140,11 +139,11 @@ class CSISolarOAuthClient:
             print("✗ Refresh token não disponível")
             return False
 
+        oauth_url = f"{self.base_url}/home/oauth-s/oauth/token"
         refresh_data = {
             "grant_type": "refresh_token",
             "refresh_token": self.refresh_token,
         }
-        oauth_url = f"{self.base_url}/home/oauth-s/oauth/token"
 
         try:
             response = self.client.post(oauth_url, data=refresh_data)

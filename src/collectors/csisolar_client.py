@@ -1,3 +1,4 @@
+import logging
 import random
 import time
 from datetime import datetime
@@ -24,6 +25,9 @@ class CSISolarClient:
             follow_redirects=True,
         )
 
+        logging.basicConfig(level=logging.INFO)
+        self.logger = logging.getLogger(__name__)
+
     def get_headers(self):
         return {
             "Accept": "application/json, text/plain, */*",
@@ -46,18 +50,10 @@ class CSISolarClient:
 
     def update_rate_limit_from_headers(self, headers):
         try:
-            self.remaining_tokens = int(
-                headers.get("X-RateLimit-Remaining", self.remaining_tokens)
-            )
-            self.burst_capacity = int(
-                headers.get("X-RateLimit-Burst-Capacity", self.burst_capacity)
-            )
-            self.replenish_rate = int(
-                headers.get("X-RateLimit-Replenish-Rate", self.replenish_rate)
-            )
-            self.logger.info(
-                f"Rate limit atualizado: {self.remaining_tokens}/{self.burst_capacity}"
-            )
+            self.remaining_tokens = int(headers.get("X-RateLimit-Remaining", self.remaining_tokens))
+            self.burst_capacity = int(headers.get("X-RateLimit-Burst-Capacity", self.burst_capacity))
+            self.replenish_rate = int(headers.get("X-RateLimit-Replenish-Rate", self.replenish_rate))
+            self.logger.info(f"Rate limit atualizado: {self.remaining_tokens}/{self.burst_capacity}")
         except (ValueError, TypeError):
             self.logger.warning("Erro ao parsear headers de rate limit")
 
@@ -85,9 +81,7 @@ class CSISolarClient:
             self.last_request_time = time.time()
 
             if response.status_code == 429:
-                self.logger.warning(
-                    "Rate limit excedido! Headers podem estar desatualizados."
-                )
+                self.logger.warning("Rate limit excedido! Headers podem estar desatualizados.")
                 time.sleep(2)
                 return self.make_request(method, endpoint, **kwargs)
 
@@ -95,7 +89,7 @@ class CSISolarClient:
             return response
 
         except httpx.RequestError as e:
-            self.logger.error(f"Erro na requisição: {e}")
+            self.logger.exception(f"Erro na requisição: {e}")
             raise
 
     def get_power_data_daily(self, device_id, date):
@@ -119,6 +113,18 @@ class CSISolarClient:
         response = self.make_request("GET", endpoint, params=params)
         return response.json()
 
+    def get_power_data_year(self, device_id, date):
+        endpoint = f"/home/maintain-s/history/power/{device_id}/stats/year"
+        params = {"year": date.year}
+
+        response = self.make_request("GET", endpoint, params=params)
+        return response.json()
+
+    def get_power_data_total(self, device_id):
+        endpoint = f"/home/maintain-s/history/power/{device_id}/stats/total"
+        response = self.make_request("GET", endpoint)
+        return response.json()
+
     def get_power_range(self, device_id, start_date, end_date, granularity="daily"):
         if isinstance(start_date, str):
             start_date = datetime.strptime(start_date, "%Y-%m-%d")
@@ -128,10 +134,7 @@ class CSISolarClient:
         if granularity not in ["daily", "monthly"]:
             raise ValueError("Granularity must be 'daily' or 'monthly'")
 
-        if granularity == "monthly":
-            function = self.get_power_data_month
-        else:
-            function = self.get_power_data_daily
+        function = self.get_power_data_month if granularity == "monthly" else self.get_power_data_daily
 
         current_date = start_date
         results = []
@@ -145,22 +148,15 @@ class CSISolarClient:
 
             try:
                 data = function(device_id, current_date)
-                results.append({
-                    "date": current_date.strftime("%Y-%m-%d"),
-                    "data": data,
-                })
+                results.append({"date": current_date.strftime("%Y-%m-%d"), "data": data})
                 request_count += 1
                 if request_count % 10 == 0:
-                    eta = (
-                        self.burst_capacity - self.remaining_tokens
-                    ) / self.replenish_rate
+                    eta = (self.burst_capacity - self.remaining_tokens) / self.replenish_rate
                     tokens = f"{self.remaining_tokens}/{self.burst_capacity}"
-                    self.logger.info(
-                        f"Progress: {request_count} requests | Tokens: {tokens} | ETA: {eta:.1f}s"
-                    )
+                    self.logger.info(f"Progress: {request_count} requests | Tokens: {tokens} | ETA: {eta:.1f}s")
 
             except Exception as e:
-                self.logger.error(f"Erro ao obter dados para {current_date}: {e}")
+                self.logger.exception(f"Erro ao obter dados para {current_date}: {e}")
 
             if granularity == "monthly":
                 current_date = current_date.replace(day=1) + relativedelta(months=1)
@@ -175,7 +171,6 @@ class CSISolarClient:
             "remaining_tokens": self.remaining_tokens,
             "burst_capacity": self.burst_capacity,
             "replenish_rate": self.replenish_rate,
-            "estimated_wait_for_full": (self.burst_capacity - self.remaining_tokens)
-            / self.replenish_rate,
+            "estimated_wait_for_full": (self.burst_capacity - self.remaining_tokens) / self.replenish_rate,
             "sustainable_rate_per_hour": self.replenish_rate * 3600,
         }

@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+
 from config import settings
-from feature_utils import create_features
 
 logger = logging.getLogger("solar_app")
 
@@ -14,7 +14,7 @@ def load_dataset(filepath, freq):
     logger.info(f"Carregando dados: {filepath}")
 
     df = pd.read_csv(filepath, parse_dates=["date_time"])
-    df.set_index("date_time", inplace=True)
+    df = df.set_index("date_time")
     df.index = df.index.tz_localize(None)
     df = df.sort_index()
     return df.asfreq(freq)
@@ -81,7 +81,7 @@ def load_data():
     #     """
     #     Os dados utilizados neste projeto foram coletados por meio de um sistema de monitoramento de uma usina solar
     #     fotovoltaica localizada no campus Gama da Universidade de Brasília (UnB). O sistema de monitoramento
-    #     é composto por 6 medidores de energia (LDTEA 1, LDTEA 2, LDTEA 3, LDTEA 4, UAC 2 e UAC 3). Os dados foram coletados 
+    #     é composto por 6 medidores de energia (LDTEA 1, LDTEA 2, LDTEA 3, LDTEA 4, UAC 2 e UAC 3). Os dados foram coletados
     #     a cada 15 minutos no período de 01/06/2023 a 30/09/2023.
     #     """
     # )
