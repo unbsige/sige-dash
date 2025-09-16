@@ -8,6 +8,33 @@ env = Env()
 env_file = ROOT_DIR / ".env"
 
 
+thermo_irradiance = ["gti_net", "csi_mean", "cell_temp_mean", "day_of_year_cos", "season", "day_since"]
+
+xgb_params = {
+    "objective": "reg:absoluteerror",
+    "learning_rate": 0.04,
+    "max_depth": 4,
+    "min_child_weight": 4,
+    "subsample": 0.75,
+    "colsample_bytree": 0.8,
+    "colsample_bylevel": 0.8,
+    "reg_alpha": 0.2,
+    "reg_lambda": 0.15,
+    "gamma": 0.2,
+    "n_estimators": 400,
+    "early_stopping_rounds": 40,
+}
+
+
+ML_CONFIG = {
+    "START_DATE": "2022-03-01",
+    "END_DATE": "2024-12-31",
+    "FEATURES": thermo_irradiance,
+    "XGB_PARAMS": xgb_params,
+    "TARGET_COL": "energy",
+    "FREQUENCY": "D",
+}
+
 env.read_env(env_file)
 
 API_KEYS = {
@@ -19,19 +46,6 @@ GEOLOCATION = {
     "lat": env.float("LAT", -15.7997),
     "lon": env.float("LON", -47.8645),
 }
-
-# DEVICE_ID_ICS = 1735533
-# DEVICE_ID_IPOL_IREL = 1734657
-# DEVICE_ID_UED = 1481452
-# DEVICE_ID_LDTEA_MASP = 1481327
-# DEVICE_ID_FCE_UED = 1481495
-
-# https://webmonitoring-gl.csisolar.com/home/maintain-s/operating/system/
-# https://webmonitoring-gl.csisolar.com/home/maintain-s/history/power/1735533/stats/month?year=2025&month=9 (dia a dia - mes completo)
-# https://webmonitoring-gl.csisolar.com/home/maintain-s/history/power/1735533/record?year=2025&month=9&day=7 (a cada 5 minutos - dia especifico)
-# https://webmonitoring-gl.csisolar.com/home/maintain-s/history/power/1481452/stats/year?year=2025 (mes a mes - ano completo)
-# https://webmonitoring-gl.csisolar.com/home/maintain-s/history/power/1481452/stats/total (ano a ano - desde o inicio)
-# https://webmonitoring-gl.csisolar.com/home/region-s/weather/record/month?regionNationId=33&year=2025&month=09&timezone=America%2FSao_Paulo&lan=pt
 
 INVERTERS = {
     "canadian": {
@@ -58,24 +72,73 @@ CREDENTIALS = {
     },
 }
 
-PLANT_UED = {
-    "name": "Unidade de Ensino e Docência (UED)",
-    "location": "Faculdade de Ciências e Tecnologias em Engenharia - Campus UnB Gama",
-    "installed_capacity": 125.0,
-    "inverter_model": "canadian",
-    "credentials": CREDENTIALS["ued"],
-    "device_id": env.str("DEVICE_ID_UED"),
-    "latitude": env.str("LAT"),
-    "longitude": env.str("LON"),
-    "devices": [
-        {
-            "id": env.str("DEVICE_ID_UED"),
-            "name": "UED",
-            "capacity": 62.5,
-            "model": "CSI-50KTL",
-            "serial_number": "",
-        },
-    ],
+PLANTS_CONFIG = {
+    "fcte_ued": {
+        "name": "Faculdade de Ciências e Tecnologias em Engenharia - Campus UnB Gama",
+        "acronym": "FCTE UED",
+        "location": "Unidade de Ensino e Docência",
+        "installed_capacity": 125.0,
+        "inverter_model": "canadian",
+        "credentials": "ued",
+        "device_id": env.str("DEVICE_ID_UED"),
+        "latitude": env.float("LAT"),
+        "longitude": env.float("LON"),
+        "azimuth": 0,
+        "tilt": 16,
+        "module_type": "mono-si",
+        "noct": 42.0,
+        "temp_coeff": -0.0037,
+        "irrad_coeff": 0.031,
+        "csv_file": "pv_data_ued.csv",
+        "devices": [
+            {
+                "id": env.str("DEVICE_ID_UED"),
+                "name": "UED",
+                "capacity": 62.5,
+                "model": "CSI-50KTL",
+                "serial_number": "",
+            },
+        ],
+    },
+    "fcte_ldtea": {
+        "name": "Laboratório de Desenvolvimento de Tecnologias para Energia Alternativa e MASP",
+        "acronym": "LDTEA e MASP",
+        "location": "Campus UnB Gama",
+        "installed_capacity": 202.0,
+        "inverter_model": "canadian",
+        "credentials": "ldtea",
+        "device_id": env.str("DEVICE_ID_LDTEA_MASP"),
+        "latitude": env.float("LAT"),
+        "longitude": env.float("LON"),
+        "azimuth": 0,
+        "tilt": 16,
+        "module_type": "mono-si",
+        "noct": 42.0,
+        "temp_coeff": -0.0037,
+        "irrad_coeff": 0.031,
+        "csv_file": "fcte_ldtea_data.csv",
+        "devices": [],
+    },
+    "fce_ued": {
+        "name": "Unidade de Ensino e Docência - FCE",
+        "acronym": "FCE UED",
+        "location": "Faculdade de Ciências Econômicas - Campus UnB Gama",
+        "installed_capacity": 50.0,
+        "inverter_model": "canadian",
+        "credentials": "fce_ued",
+        "device_id": env.str("DEVICE_ID_FCE_UED"),
+        "latitude": env.float("LAT"),
+        "longitude": env.float("LON"),
+        "devices": [
+            {
+                "id": env.str("DEVICE_ID_FCE_UED"),
+                "name": "UED FCE",
+                "capacity": 50.0,
+                "model": "CSI-50KTL",
+                "serial_number": "",
+            },
+        ],
+    },
 }
 
 DATA_DIR = ROOT_DIR / "data"
