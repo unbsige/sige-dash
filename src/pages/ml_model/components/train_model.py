@@ -5,8 +5,8 @@ import streamlit as st
 import xgboost as xgb
 
 from config.settings import IRRADIATION_FEATURES
-from metric_utils import calculate_forecast_accuracy
 from pages.model_ml.components.physical_model import PhysicalModel
+from src.metrics import calculate_forecast_accuracy
 
 
 def train_evaluate_model(model_type, datasets, target):
@@ -45,9 +45,7 @@ def train_xgboost(df_train, df_test, target):
     y_pred = model.predict(x_test)
     y_pred = pd.DataFrame(y_pred, index=df_test.index, columns=["y_pred"])
     y_pred["y_true"] = df_test[target]
-    metrics = calculate_forecast_accuracy(
-        y_pred["y_true"], y_pred["y_pred"], df_train[target]
-    )
+    metrics = calculate_forecast_accuracy(y_pred["y_true"], y_pred["y_pred"], df_train[target])
 
     st.write("XGBoost treinado com sucesso!")
     return y_pred, metrics
@@ -73,9 +71,7 @@ def train_lightgbm(df_train, df_test, target):
     y_pred = model.predict(x_test)
     y_pred = pd.DataFrame(y_pred, index=df_test.index, columns=["y_pred"])
     y_pred["y_true"] = df_test[target]
-    metrics = calculate_forecast_accuracy(
-        y_pred["y_true"], y_pred["y_pred"], df_train[target]
-    )
+    metrics = calculate_forecast_accuracy(y_pred["y_true"], y_pred["y_pred"], df_train[target])
 
     st.write("LightGBM treinado com sucesso!")
     return y_pred, metrics
@@ -95,18 +91,14 @@ def train_physical_model(df_train, df_test, target):
             errors.append("O modelo físico requer recurso:'ghi' ou 'gti'")
 
         if errors:
-            error_message = "Erro(s) ao treinar o modelo físico:\n" + "\n".join(
-                f"- {error}" for error in errors
-            )
+            error_message = "Erro(s) ao treinar o modelo físico:\n" + "\n".join(f"- {error}" for error in errors)
             st.error(error_message)
             return None
 
         if "ghi" in columns and "gti" in columns:
             df_train = df_train.drop(columns=["gti"])
             df_test = df_test.drop(columns=["gti"])
-            st.info(
-                "As colunas 'ghi' e 'gti' estavam presentes. A coluna 'gti' foi removida para evitar redundância."
-            )
+            st.info("As colunas 'ghi' e 'gti' estavam presentes. A coluna 'gti' foi removida para evitar redundância.")
 
         model = PhysicalModel(model_type)
         X_train = df_train.drop(columns=exclude_features).values.T
@@ -122,9 +114,7 @@ def train_physical_model(df_train, df_test, target):
         y_pred["y_true"] = df_test[target]
 
         st.write("Modelo físico treinado com sucesso!")
-        metrics = calculate_forecast_accuracy(
-            y_pred["y_true"], y_pred["y_pred"], df_train[target]
-        )
+        metrics = calculate_forecast_accuracy(y_pred["y_true"], y_pred["y_pred"], df_train[target])
         return y_pred, metrics
 
 
@@ -132,9 +122,7 @@ def plot_feature_importance(model, lower_bound=0.1):
     model_name = model.__class__.__name__
 
     feature_importance = get_feature_importance(model)
-    feature_importance = feature_importance[
-        feature_importance["percentage"] > lower_bound
-    ]
+    feature_importance = feature_importance[feature_importance["percentage"] > lower_bound]
     plot_data = feature_importance.sort_values("percentage", ascending=True)
 
     with st.expander("Importância dos Recursos ", expanded=True):

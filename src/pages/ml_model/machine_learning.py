@@ -3,10 +3,10 @@ import streamlit as st
 
 from feature_utils import create_features
 from load_data import load_data
-from pages.model_ml.components.features import select_features
-from pages.model_ml.components.plants import select_plant
-from pages.model_ml.components.split_dataset import split_train_test
-from pages.model_ml.components.train_model import train_evaluate_model
+from src.pages.ml_model.components.features import select_features
+from src.pages.ml_model.components.plants import select_plant
+from src.pages.ml_model.components.split_dataset import split_train_test
+from src.pages.ml_model.components.train_model import train_evaluate_model
 
 st.set_page_config(
     page_title="Machine Learning",
