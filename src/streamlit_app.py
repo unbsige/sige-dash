@@ -1,14 +1,11 @@
 import logging
 
 import streamlit as st
-from config import settings
-from dash import dashboard
-
-# from feature_utils import create_features
-from load_data import load_data
 from PIL import Image
 
-# from app.pages import machine_learning
+from config import settings
+from dash import dashboard
+from load_data import load_data
 
 logger = logging.getLogger("solar_app")
 

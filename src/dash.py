@@ -4,7 +4,7 @@ import numpy as np
 import streamlit as st
 
 from config import settings
-from plot_utils import plot_go_scatter, plot_graph_bar, plot_graph_line
+from src.charts import plot_go_scatter, plot_graph_bar, plot_graph_line
 
 logger = logging.getLogger("solar_app")
 
