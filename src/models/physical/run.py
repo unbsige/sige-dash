@@ -1,17 +1,31 @@
-import pandas as pd
+import warnings
 
-columns = ["date_time", "pv_power"]
-file_path = "./data/raw/pv_power_kw_20221213_20250630_PT5M.csv"
+import streamlit as st
 
-df_power = pd.read_csv(file_path, index_col="date_time", parse_dates=["date_time"], usecols=columns)
-df_power = df_power.rename(columns={"pv_power": "ac_power_kw"})
-df_power = df_power.sort_index()
+from src.models.physical.pv_model import PVBaselineModel
 
-print("-" * 80)
-print(" => Dados carregados do arquivo CSV")
-print("-" * 80)
-print(f"Shape: {df_power.shape}")
-print(f"Período: {df_power.index.min()} até {df_power.index.max()}")
-print(f"frequency dataset: {df_power.index.freqstr} - infer: {pd.infer_freq(df_power.index)}")
-print(f"\nValores ausentes (NaN):\n{df_power.isna().sum()}")
-print("-" * 80)
+warnings.filterwarnings("ignore")
+
+
+def run_pv_simulation(df_data, params, apply_dc_losses=True, apply_ac_losses=True, use_nbr_efficiency=True):
+    """Executa a simulação usando o modelo PV."""
+
+    df_subset = df_data.copy()
+
+    model = PVBaselineModel(
+        params=params,
+        apply_ac_loss=apply_ac_losses,
+        apply_dc_loss=apply_dc_losses,
+        use_nbr_eff=use_nbr_efficiency,
+    )
+
+    with st.spinner("Executando simulação NBR 16274..."):
+        coeffs = (
+            {"a0": params.dc_loss_coeffs.a0, "a1": params.dc_loss_coeffs.a1, "a2": params.dc_loss_coeffs.a2}
+            if apply_dc_losses
+            else None
+        )
+
+        results = model.calculate_ac_power(df=df_subset, irrad_col="gti", air_temp_col="air_temp", coeffs=coeffs)
+
+    return results
