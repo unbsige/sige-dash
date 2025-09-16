@@ -10,14 +10,41 @@ logger = logging.getLogger("solar_app")
 
 
 @st.cache_data
-def load_dataset(filepath, freq):
+def load_dataset(filepath, freq, columns=None):
     logger.info(f"Carregando dados: {filepath}")
 
-    df = pd.read_csv(filepath, parse_dates=["date_time"])
+    if columns:
+        df = pd.read_csv(filepath, parse_dates=["date_time"], usecols=["date_time"] + columns)
+    else:
+        df = pd.read_csv(filepath, parse_dates=["date_time"])
+
     df = df.set_index("date_time")
     df.index = df.index.tz_localize(None)
     df = df.sort_index()
-    return df.asfreq(freq)
+    # return df.asfreq(freq)
+    return df
+
+
+def load_plant_data(plant_key, freq, columns=None):
+    plant_config = settings.PLANTS_CONFIG.get(plant_key)
+    if not plant_config:
+        logger.error(f"Planta {plant_key} não encontrada na configuração")
+        st.error(f"Planta {plant_key} não encontrada na configuração")
+        st.stop()
+
+    filename = plant_config["csv_file"]
+    filename_parts = filename.split(".")
+    filename = f"{filename_parts[0]}_{freq}.{filename_parts[1]}"
+    filepath = Path(settings.FINAL_DATA_DIR / filename)
+
+    if not filepath.exists():
+        logger.error(f"Arquivo {filepath} não encontrado")
+        st.error(f"Arquivo {filepath} não encontrado")
+        st.stop()
+
+    df = load_dataset(filepath, freq, columns=columns)
+    df = load_dataset(filepath, freq)
+    return df
 
 
 def load_process_data(file_name, freq, df_name):
@@ -57,7 +84,6 @@ def load_data():
 
     freq = settings.FREQUENCY
     if "df_prod" not in st.session_state:
-        # file_name = "1.1_energy_prod_ldtea.csv"
         file_name = "1.0_energy_prod_all.csv"
         df_prod = load_process_data(file_name, freq, "df_prod")
         st.session_state.df_prod = df_prod
@@ -74,53 +100,78 @@ def load_data():
     #     file_name = "data_weather_p60m.csv"
     #     st.session_state.df_wth = load_process_data(file_name, freq, "df_wth")
 
+
+def get_plant_defaults(plant_config):
+    df_losses = {
+        "soiling": 0.025,  # 2.5% - maior devido ao clima seco
+        "shading": 0.005,  # 0.5% - campus aberto
+        "mismatch": 0.020,  # 2.0% - módulos comerciais
+        "dc_wiring": 0.015,  # 1.5% - distâncias médias
+        "aging": 0.008,  # 0.8% - degradação por ano
+        "diodes": 0.001,  # 0.1% - perdas mínimas
+    }
+
+    tech_behavior = {"mono-si": -0.028, "poly-si": -0.031, "perc": -0.025}
+
+    module_type = plant_config.get("module_type", "poly-si")
+
+    return {
+        "a0": sum(df_losses.values()),
+        "a1": tech_behavior.get(module_type, -0.031),
+        "a2": abs(plant_config["temp_coeff"]) * 0.8,  # Perdas térmicas não-lineares
+        "k0": 0.0018,  # Canadian Solar típico
+        "k1": 0.0082,
+        "k2": 0.0195,
+    }
+
+
 # ------------------------------------------------------------------------------
 
-    # st.sidebar.subheader("Dados")
-    # st.sidebar.markdown(
-    #     """
-    #     Os dados utilizados neste projeto foram coletados por meio de um sistema de monitoramento de uma usina solar
-    #     fotovoltaica localizada no campus Gama da Universidade de Brasília (UnB). O sistema de monitoramento
-    #     é composto por 6 medidores de energia (LDTEA 1, LDTEA 2, LDTEA 3, LDTEA 4, UAC 2 e UAC 3). Os dados foram coletados
-    #     a cada 15 minutos no período de 01/06/2023 a 30/09/2023.
-    #     """
-    # )
+# st.sidebar.subheader("Dados")
+# st.sidebar.markdown(
+#     """
+#     Os dados utilizados neste projeto foram coletados por meio de um sistema de monitoramento de uma usina solar
+#     fotovoltaica localizada no campus Gama da Universidade de Brasília (UnB). O sistema de monitoramento
+#     é composto por 6 medidores de energia (LDTEA 1, LDTEA 2, LDTEA 3, LDTEA 4, UAC 2 e UAC 3). Os dados foram coletados
+#     a cada 15 minutos no período de 01/06/2023 a 30/09/2023.
+#     """
+# )
 
-    # st.sidebar.markdown(
-    #     """
-    #     **Fonte dos dados:** [UnB Solar](https://unbsolar.unb.br/monitoramento)
-    #     """
-    # )
-
-# =======================================================================================
-
-    # building_plant = st.sidebar.selectbox(
-    #     "Selecione o prédio",
-    #     ["LDTEA", "UAC"],
-    #     key="building_plant",
-    # )
-
-    # if building_plant == "LDTEA":
-    #     file_name = "1.1_energy_prod_ldtea.csv"
-    # elif building_plant == "UAC":
-    #     file_name = "1.2_energy_prod_uac.csv"
-    # else:
-    #     logger.error(f"Prédio {building_plant} não encontrado")
+# st.sidebar.markdown(
+#     """
+#     **Fonte dos dados:** [UnB Solar](https://unbsolar.unb.br/monitoramento)
+#     """
+# )
 
 # =======================================================================================
 
-    # solar_data = st.sidebar.checkbox("Dados de Irradiação Solar", value=True)
+# building_plant = st.sidebar.selectbox(
+#     "Selecione o prédio",
+#     ["LDTEA", "UAC"],
+#     key="building_plant",
+# )
 
-    # if solar_data:
-    #     source = st.sidebar.selectbox(
-    #         "Selecione a fonte de dados",
-    #         ["Solcast", "TempoOK"],
-    #         key="source",
-    #     )
+# if building_plant == "LDTEA":
+#     file_name = "1.1_energy_prod_ldtea.csv"
+# elif building_plant == "UAC":
+#     file_name = "1.2_energy_prod_uac.csv"
+# else:
+#     logger.error(f"Prédio {building_plant} não encontrado")
 
-    # if source == "Solcast":
-    #     file_name = "0.2_radiation_solcast_p60m.csv"
-    # elif source == "TempoOK":
-    #     file_name = "0.1_radiation_tempook_p60m.csv"
-    # else:
-    #     logger.error(f"Fonte de dados {source} não encontrada")
+# =======================================================================================
+
+# solar_data = st.sidebar.checkbox("Dados de Irradiação Solar", value=True)
+
+# if solar_data:
+#     source = st.sidebar.selectbox(
+#         "Selecione a fonte de dados",
+#         ["Solcast", "TempoOK"],
+#         key="source",
+#     )
+
+# if source == "Solcast":
+#     file_name = "0.2_radiation_solcast_p60m.csv"
+# elif source == "TempoOK":
+#     file_name = "0.1_radiation_tempook_p60m.csv"
+# else:
+#     logger.error(f"Fonte de dados {source} não encontrada")
