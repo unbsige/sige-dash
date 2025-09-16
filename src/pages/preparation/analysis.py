@@ -54,13 +54,9 @@ st.plotly_chart(fig, width="stretch")
 fig.add_trace(
     go.Scattermapbox(
         lat=data["lat"].tolist()
-        + [
-            data["lat"].tolist()[0]
-        ],  # Adiciona o primeiro ponto ao final para fechar o polígono
+        + [data["lat"].tolist()[0]],  # Adiciona o primeiro ponto ao final para fechar o polígono
         lon=data["lon"].tolist()
-        + [
-            data["lon"].tolist()[0]
-        ],  # Adiciona o primeiro ponto ao final para fechar o polígono
+        + [data["lon"].tolist()[0]],  # Adiciona o primeiro ponto ao final para fechar o polígono
         mode="lines",
         fill="toself",  # Isso preenche a área dentro do polígono
         fillcolor="rgba(255, 0, 0, 0.2)",  # Define a cor e a transparência do preenchimento
@@ -81,9 +77,7 @@ def sort_data(data):
 
 def remove_duplicates(data):
     st.write("### Remove Duplicates")
-    columns = st.multiselect(
-        "Select columns for identifying duplicates", options=data.columns
-    )
+    columns = st.multiselect("Select columns for identifying duplicates", options=data.columns)
 
     if columns:
         data.drop_duplicates(subset=columns, inplace=True)
@@ -115,11 +109,7 @@ def show_data(data):
     st.write(data.corr(numeric_only=True))
 
     st.write("Data correlation")
-    st.write(
-        data.corr(numeric_only=True).style.background_gradient(
-            cmap="RdBu", vmin=-1, vmax=1
-        )
-    )
+    st.write(data.corr(numeric_only=True).style.background_gradient(cmap="RdBu", vmin=-1, vmax=1))
 
 
 container = st.container()
@@ -140,9 +130,7 @@ with col1:
     st.write("Colunas do dataframe:", all_columns)
 
 with col2:
-    df_types = df_prod.dtypes.reset_index().rename(
-        columns={"index": "coluna", 0: "tipo"}
-    )
+    df_types = df_prod.dtypes.reset_index().rename(columns={"index": "coluna", 0: "tipo"})
     df_types["tipo"] = df_types["tipo"].astype(str)
     df_types.set_index("coluna", inplace=True)
     st.write("Tipos dos dados", df_types.to_dict()["tipo"])
