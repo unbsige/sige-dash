@@ -50,35 +50,60 @@ def setup_logging(settings):
 
 def setup_app_theme():
     """Configura o tema global da aplicação."""
-    st.set_page_config(page_title="SIGE Dashboard", page_icon="⚡", layout="wide", initial_sidebar_state="expanded")
+
+    st.set_page_config(
+        page_title="MEPA Dashboard",
+        page_icon="⚡",
+        layout="wide",
+        initial_sidebar_state="expanded",
+    )
 
     ThemeManager.apply_theme()
+    colors = ThemeManager.get_color_palette()
+    energy_colors = ThemeManager.get_chart_colors("energy")
 
 
 def start_app():
     home_page = st.Page("streamlit_app.py", title="Home", icon="🏠")
-    ml_page = st.Page(
-        "./pages/ml_model/machine_learning.py",
-        title="Treinar Modelo",
-        icon="🤖",
+
+    dash_multi = st.Page(
+        "./pages/dashboard/dash_multi.py",
+        title="Dashboard",
+        icon="📊",
+    )
+    dashboard_page = st.Page(
+        "./pages/dashboard/dash.py",
+        title="Photovoltaic Plants",
+        icon="🌞",
     )
 
-    data_analysis_page = st.Page(
-        "./pages/preparation/analysis.py",
-        title="Análise de Dados",
-        icon="📊",
+    ml_page = st.Page(
+        "./pages/ml_model/machine_learning.py",
+        title="Machine Learning",
+        icon="🧠",
     )
 
     physical_page = st.Page(
         "./pages/physical_model/physics.py",
-        title="Modelagem Física",
-        icon="⚛️",
+        title="Physical Modeling",
+        icon="🧪",
+    )
+    anomaly_page = st.Page(
+        "./pages/anomaly/anomaly_detection.py",
+        title="Anomaly Detection",
+        icon="🚨",
+    )
+
+    forecast_page = st.Page(
+        "./pages/forecast/forecasting.py",
+        title="Forecasting",
+        icon="🔮",
     )
 
     pg = st.navigation(
         {
-            "Dashboard": [home_page],
-            "Análise e Modelagem": [data_analysis_page, ml_page, physical_page],
+            "🏠 Principal": [home_page, dash_multi, dashboard_page, anomaly_page, forecast_page],
+            "🔬 Modelos": [ml_page, physical_page],
         },
     )
     pg.run()

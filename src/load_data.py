@@ -32,7 +32,7 @@ def load_plant_data(plant_key, freq, columns=None):
         st.error(f"Planta {plant_key} não encontrada na configuração")
         st.stop()
 
-    filename = plant_config["csv_file"]
+    filename = plant_config.get("data_source", {}).get("file")
     filename_parts = filename.split(".")
     filename = f"{filename_parts[0]}_{freq}.{filename_parts[1]}"
     filepath = Path(settings.FINAL_DATA_DIR / filename)
@@ -96,10 +96,6 @@ def load_data():
         file_name = "0.2_radiation_solcast_p60m.csv"
         st.session_state.df_rad_solcast = load_process_data(file_name, freq, "df_rad_solcast")
 
-    # if "df_wth" not in st.session_state:
-    #     file_name = "data_weather_p60m.csv"
-    #     st.session_state.df_wth = load_process_data(file_name, freq, "df_wth")
-
 
 def get_plant_defaults(plant_config):
     df_losses = {
@@ -123,55 +119,3 @@ def get_plant_defaults(plant_config):
         "k1": 0.0082,
         "k2": 0.0195,
     }
-
-
-# ------------------------------------------------------------------------------
-
-# st.sidebar.subheader("Dados")
-# st.sidebar.markdown(
-#     """
-#     Os dados utilizados neste projeto foram coletados por meio de um sistema de monitoramento de uma usina solar
-#     fotovoltaica localizada no campus Gama da Universidade de Brasília (UnB). O sistema de monitoramento
-#     é composto por 6 medidores de energia (LDTEA 1, LDTEA 2, LDTEA 3, LDTEA 4, UAC 2 e UAC 3). Os dados foram coletados
-#     a cada 15 minutos no período de 01/06/2023 a 30/09/2023.
-#     """
-# )
-
-# st.sidebar.markdown(
-#     """
-#     **Fonte dos dados:** [UnB Solar](https://unbsolar.unb.br/monitoramento)
-#     """
-# )
-
-# =======================================================================================
-
-# building_plant = st.sidebar.selectbox(
-#     "Selecione o prédio",
-#     ["LDTEA", "UAC"],
-#     key="building_plant",
-# )
-
-# if building_plant == "LDTEA":
-#     file_name = "1.1_energy_prod_ldtea.csv"
-# elif building_plant == "UAC":
-#     file_name = "1.2_energy_prod_uac.csv"
-# else:
-#     logger.error(f"Prédio {building_plant} não encontrado")
-
-# =======================================================================================
-
-# solar_data = st.sidebar.checkbox("Dados de Irradiação Solar", value=True)
-
-# if solar_data:
-#     source = st.sidebar.selectbox(
-#         "Selecione a fonte de dados",
-#         ["Solcast", "TempoOK"],
-#         key="source",
-#     )
-
-# if source == "Solcast":
-#     file_name = "0.2_radiation_solcast_p60m.csv"
-# elif source == "TempoOK":
-#     file_name = "0.1_radiation_tempook_p60m.csv"
-# else:
-#     logger.error(f"Fonte de dados {source} não encontrada")

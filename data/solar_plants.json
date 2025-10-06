@@ -1,0 +1,466 @@
+{
+    "metadata": {
+        "university": "Universidade de Brasília (UnB)",
+        "last_updated": "2025-09-23T10:00:00",
+        "total_plants": 15,
+        "total_power_kwp": 1563.23,
+        "total_annual_generation_kwh": 2209832.33,
+        "description": "Dados das usinas fotovoltaicas da Universidade de Brasília",
+        "campus_count": 4
+    },
+     "campus_summary": {
+        "Gama": {
+            "plant_count": 4,
+            "total_power_kwp": 375.3,
+            "total_generation_kwh": 530536.44,
+            "percentage_of_total": 24.0
+        },
+        "Planaltina": {
+            "plant_count": 1,
+            "total_power_kwp": 44.0,
+            "total_generation_kwh": 62199.85,
+            "percentage_of_total": 2.8
+        },
+        "Ceilândia": {
+            "plant_count": 2,
+            "total_power_kwp": 184.0,
+            "total_generation_kwh": 260108.46,
+            "percentage_of_total": 11.8
+        },
+        "Darcy Ribeiro": {
+            "plant_count": 8,
+            "total_power_kwp": 959.93,
+            "total_generation_kwh": 1356987.55,
+            "percentage_of_total": 61.4
+        }
+    },
+    "plants": {
+        "fcte_uac": {
+            "code": "fcte_uac",
+            "acronym": "FCTE",
+            "campus": "Faculdade de Ciências e Tecnologia e Engenharia",
+            "building": "UAC - Unidade Acadêmica",
+            "power_kwp": 104.5,
+            "annual_generation_kwh": 147724.64,
+            "status": 0,
+            "installation_date": "2023-03-15",
+            "coordinates": {
+                "latitude": -15.989077,
+                "longitude": -48.044750
+            },
+            "credentials": {
+                "username": "",
+                "password": ""
+            },
+            "device": {
+                "model": "",
+                "id": "",
+                "manufacturer": ""
+            },
+            "technical_specs": {
+                "panel_count": 380,
+                "panel_power_wp": 275,
+                "inverter_model": "",
+                "string_count": 12
+            }
+        },
+        "fcte_ued": {
+            "code": "fcte_ued",
+            "acronym": "FCTE",
+            "campus": "Faculdade de Ciências e Tecnologia e Engenharia",
+            "building": "UED - Unidade de Ensino e Docência",
+            "power_kwp": 124.8,
+            "annual_generation_kwh": 176421.39,
+            "status": 1,
+            "installation_date": "2023-04-20",
+            "coordinates": {
+                "latitude": -15.989640,
+                "longitude": -48.045637
+            },
+            "credentials": {
+                "username": "",
+                "password": ""
+            },
+            "device": {
+                "model": "",
+                "id": ""
+            },
+            "technical_specs": {
+                "panel_count": 454,
+                "panel_power_wp": 275,
+                "inverter_model": "",
+                "string_count": 15
+            }
+        },
+        "fcte_ldtea": {
+            "code": "fcte_ldtea",
+            "acronym": "FCTE",
+            "campus": "Faculdade de Ciências e Tecnologia e Engenharia",
+            "building": "LDTEA - Laboratório de Desenvolvimento de Transportes e Energias Alternativas",
+            "power_kwp": 128.0,
+            "annual_generation_kwh": 180945.02,
+            "status": 1,
+            "installation_date": "2023-05-10",
+            "coordinates": {
+                "latitude": -15.990369,
+                "longitude": -48.044286
+            },
+            "credentials": {
+                "username": "",
+                "password": ""
+            },
+            "device": {
+                "model": "",
+                "id": ""
+            },
+            "technical_specs": {
+                "panel_count": 465,
+                "panel_power_wp": 275,
+                "inverter_model": "",
+                "string_count": 16
+            }
+        },
+        "fcte_mesp": {
+            "code": "fcte_mesp",
+            "acronym": "FCTE",
+            "campus": "Faculdade de Ciências e Tecnologia e Engenharia",
+            "building": "MESP - Módulo de Serviços e Equipamentos Esportivos",
+            "power_kwp": 18.0,
+            "annual_generation_kwh": 25445.39,
+            "status": 0,
+            "installation_date": "2023-06-05",
+            "coordinates": {
+                "latitude": -15.989515,
+                "longitude": -48.044167
+            },
+            "credentials": {
+                "username": "",
+                "password": ""
+            },
+            "device": {
+                "model": "",
+                "id": ""
+            },
+            "technical_specs": {
+                "panel_count": 65,
+                "panel_power_wp": 275,
+                "inverter_model": "",
+                "string_count": 3
+            }
+        },
+        "fup_uac": {
+            "code": "fup_uac",
+            "acronym": "FUP",
+            "campus": "Faculdade UnB Planaltina ",
+            "building": "UAC - Unidade Acadêmica",
+            "power_kwp": 44.0,
+            "annual_generation_kwh": 62199.85,
+            "status": 0,
+            "installation_date": "2022-11-18",
+            "coordinates": {
+                "latitude": -15.600632,
+                "longitude": -47.659407
+            },
+            "credentials": {
+                "username": "",
+                "password": ""
+            },
+            "device": {
+                "model": "",
+                "id": ""
+            },
+            "technical_specs": {
+                "panel_count": 160,
+                "panel_power_wp": 275,
+                "inverter_model": "",
+                "string_count": 6
+            }
+        },
+        "fcts_uac": {
+            "code": "fcts_uac",
+            "acronym": "FCTS",
+            "campus": "Faculdade de Ciências e Tecnologia em Saúde",
+            "building": "UAC - Unidade Acadêmica",
+            "power_kwp": 44.0,
+            "annual_generation_kwh": 62199.85,
+            "status": 0,
+            "installation_date": "2022-12-08",
+            "coordinates": {
+                "latitude": -15.844446,
+                "longitude": -48.101728
+            },
+            "credentials": {
+                "username": "",
+                "password": ""
+            },
+            "device": {
+                "model": "",
+                "id": ""
+            },
+            "technical_specs": {
+                "panel_count": 160,
+                "panel_power_wp": 275,
+                "inverter_model": "",
+                "string_count": 6
+            }
+        },
+        "fcts_ued": {
+            "code": "fcts_ued",
+            "acronym": "FCTS",
+            "campus": "Faculdade de Ciências e Tecnologia em Saúde",
+            "building": "UED - Unidade de Ensino e Docência",
+            "power_kwp": 140.0,
+            "annual_generation_kwh": 197908.61,
+            "status": 1,
+            "installation_date": "2023-01-25",
+            "coordinates": {
+                "latitude": -15.844467,
+                "longitude": -48.1006
+            },
+            "credentials": {
+                "username": "",
+                "password": ""
+            },
+            "device": {
+                "model": "",
+                "id": ""
+            },
+            "technical_specs": {
+                "panel_count": 509,
+                "panel_power_wp": 275,
+                "inverter_model": "",
+                "string_count": 17
+            }
+        },
+        "dr_ft": {
+            "code": "dr_ft",
+            "acronym": "DR",
+            "campus": "Darcy Ribeiro",
+            "building": "FT - Faculdade de Ciências e Tecnologia em Saúde",
+            "power_kwp": 150.75,
+            "annual_generation_kwh": 213105.17,
+            "status": 0,
+            "installation_date": "2022-08-12",
+            "coordinates": {
+                "latitude": -15.763564,
+                "longitude": -47.872538
+            },
+            "credentials": {
+                "username": "",
+                "password": ""
+            },
+            "device": {
+                "model": "",
+                "id": ""
+            },
+            "technical_specs": {
+                "panel_count": 548,
+                "panel_power_wp": 275,
+                "inverter_model": "",
+                "string_count": 18
+            }
+        },
+        "dr_cic_est": {
+            "code": "dr_cic_est",
+            "acronym": "DR",
+            "campus": "Darcy Ribeiro",
+            "building": "CIC/EST - Ciência da Computação e Estatística",
+            "power_kwp": 124.8,
+            "annual_generation_kwh": 176421.39,
+            "status": 0,
+            "installation_date": "2022-09-20",
+            "coordinates": {
+                "latitude": -15.758739,
+                "longitude": -47.868986
+            },
+            "credentials": {
+                "username": "",
+                "password": ""
+            },
+            "device": {
+                "model": "",
+                "id": ""
+            },
+            "technical_specs": {
+                "panel_count": 454,
+                "panel_power_wp": 275,
+                "inverter_model": "",
+                "string_count": 15
+            }
+        },
+        "dr_ipol_irel": {
+            "code": "dr_ipol_irel",
+            "acronym": "DR",
+            "campus": "Darcy Ribeiro",
+            "building": "IPOL/IREL - Instituto de Ciências Políticas/ Instituto de Relações Internacionais",
+            "power_kwp": 124.8,
+            "annual_generation_kwh": 176421.39,
+            "status": 1,
+            "installation_date": "2022-10-15",
+            "coordinates": {
+                "latitude": -15.758130,
+                "longitude": -47.869636
+            },
+            "credentials": {
+                "username": "",
+                "password": ""
+            },
+            "device": {
+                "model": "",
+                "id": ""
+            },
+            "technical_specs": {
+                "panel_count": 454,
+                "panel_power_wp": 275,
+                "inverter_model": "",
+                "string_count": 15
+            }
+        },
+        "dr_ics": {
+            "code": "dr_ics",
+            "acronym": "DR",
+            "campus": "Darcy Ribeiro",
+            "building": "ICS - Instituto de Ciências Sociais",
+            "power_kwp": 124.8,
+            "annual_generation_kwh": 176421.39,
+            "status": 1,
+            "installation_date": "2022-11-02",
+            "coordinates": {
+                "latitude": -15.757465,
+                "longitude": -47.872862
+            },
+            "credentials": {
+                "username": "",
+                "password": ""
+            },
+            "device": {
+                "model": "",
+                "id": ""
+            },
+            "technical_specs": {
+                "panel_count": 454,
+                "panel_power_wp": 275,
+                "inverter_model": "",
+                "string_count": 15
+            }
+        },
+        "dr_bsan": {
+            "code": "dr_bsan",
+            "acronym": "DR",
+            "campus": "Darcy Ribeiro",
+            "building": "BSAN - Bloco de Salas de Aula Norte",
+            "power_kwp": 44.0,
+            "annual_generation_kwh": 62199.85,
+            "status": 0,
+            "installation_date": "2023-02-14",
+            "coordinates": {
+                "latitude": -15.757084,
+                "longitude": -47.871251
+            },
+            "credentials": {
+                "username": "",
+                "password": ""
+            },
+            "device": {
+                "model": "",
+                "id": ""
+            },
+            "technical_specs": {
+                "panel_count": 160,
+                "panel_power_wp": 275,
+                "inverter_model": "",
+                "string_count": 6
+            }
+        },
+        "dr_masc": {
+            "code": "dr_masc",
+            "acronym": "DR",
+            "campus": "Darcy Ribeiro",
+            "building": "MASC - Módulo de Atividades de Serviço e Comércio Centro - Honestino Guimarães",
+            "power_kwp": 7.1,
+            "annual_generation_kwh": 10036.79,
+            "status": 0,
+            "installation_date": "2023-07-08",
+            "coordinates": {
+                "latitude": -15.763101,
+                "longitude": -47.871272
+            },
+            "credentials": {
+                "username": "",
+                "password": ""
+            },
+            "device": {
+                "model": "",
+                "id": ""
+            },
+            "technical_specs": {
+                "panel_count": 26,
+                "panel_power_wp": 275,
+                "inverter_model": "",
+                "string_count": 1
+            }
+        },
+        "dr_bsas": {
+            "code": "dr_bsas",
+            "acronym": "DR",
+            "campus": "Darcy Ribeiro",
+            "building": "BSAS - Bloco de Salas de Aula Sul",
+            "power_kwp": 275.77,
+            "annual_generation_kwh": 389836.75,
+            "status": 0,
+            "installation_date": "2023-08-22",
+            "coordinates": {
+                "latitude": -15.765000,
+                "longitude": -47.870000
+            },
+            "credentials": {
+                "username": "",
+                "password": ""
+            },
+            "device": {
+                "model": "",
+                "id": ""
+            },
+            "technical_specs": {
+                "panel_count": 1003,
+                "panel_power_wp": 275,
+                "inverter_model": "",
+                "string_count": 33
+            }
+        },
+        "dr_uleg_fs": {
+            "code": "dr_uleg_fs",
+            "acronym": "DR",
+            "campus": "Darcy Ribeiro",
+            "building": "ULEG/FS - Unidade de Laboratórios de Ensino de Graduação - Faculdade de Saúde",
+            "power_kwp": 107.91,
+            "annual_generation_kwh": 152544.82,
+            "status": 0,
+            "installation_date": "2023-09-10",
+            "coordinates": {
+                "latitude": -15.760000,
+                "longitude": -47.875000
+            },
+            "credentials": {
+                "username": "",
+                "password": ""
+            },
+            "device": {
+                "model": "",
+                "id": ""
+            },
+            "technical_specs": {
+                "panel_count": 392,
+                "panel_power_wp": 275,
+                "inverter_model": "",
+                "string_count": 13
+            }
+        }
+    },
+    "environmental_impact": {
+        "annual_co2_reduction_tons": 1104.91,
+        "equivalent_trees_planted": 13820,
+        "equivalent_cars_off_road": 240,
+        "equivalent_homes_powered": 1473
+    }
+}

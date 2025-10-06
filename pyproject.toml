@@ -6,14 +6,14 @@ requires-python = ">=3.11"
 dependencies = [
     "environs>=14.3.0",
     "httpx[brotli]>=0.28.1",
-    "lightgbm==4.6.*",
+    "markdown>=3.9",
     "matplotlib==3.10.*",
+    # "mlflow>=3.4.0",
     "nbformat>=4.2.0",
     "numpy==2.2.*",
     "pandas==2.3.*",
     "pipx==1.7.*",
     "plotly==6.3.*",
-    "prophet==1.1.*",
     "pykalman>=0.10.2",
     "python-dotenv==1.1.*",
     "rich==14.1.*",
@@ -21,10 +21,8 @@ dependencies = [
     "scikit-learn==1.7.*",
     "scikit-lego>=0.9.5",
     "seaborn==0.13.*",
-    "skforecast==0.17.*",
     "statsmodels==0.14.*",
     "streamlit==1.49.*",
-    "xgboost==3.0.*",
 ]
 
 

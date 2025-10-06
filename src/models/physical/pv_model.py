@@ -6,7 +6,14 @@ from src.models.physical.params import PVSystemParameters
 class PVBaselineModel:
     """Baseline physics-based model for PV power prediction using NBR 16274 equations."""
 
-    def __init__(self, params: PVSystemParameters, apply_ac_loss=True, apply_dc_loss=True, use_nbr_eff=False):
+    def __init__(
+        self,
+        params: PVSystemParameters,
+        apply_ac_loss=True,
+        apply_dc_loss=True,
+        use_nbr_eff=False,
+        global_correction_factor=1,
+    ):
         self.capacity_kwp = params.capacity_kwp
         self.noct = params.noct
         self.temp_coeff = params.temp_coeff
@@ -24,6 +31,7 @@ class PVBaselineModel:
         self.apply_ac_loss = apply_ac_loss
         self.apply_dc_loss = apply_dc_loss
         self.use_nbr_eff = use_nbr_eff
+        self.global_correction_factor = global_correction_factor
 
     def calculate_ac_power(self, df, irrad_col="gti", air_temp_col="air_temp", coeffs=None):
         """
@@ -70,6 +78,11 @@ class PVBaselineModel:
         ac_loss_factor = (1 - self.ac_loss_coeff.ac_loss) if self.apply_ac_loss else 1.0
         df_out["ac_power_kw_est"] = df_out["dc_power_adj_kw"] * df_out["inv_efficiency"] * ac_loss_factor
 
+        # Apply global correction factor (NBE = 17.9% losses)
+        if self.global_correction_factor != 1:
+            global_correction_factor = 1 - 0.179
+            df_out["ac_power_kw_est"] *= global_correction_factor
+
         return df_out
 
     def _calculate_cell_temperature(self, irradiance_wm2, air_temp):
@@ -106,11 +119,11 @@ class PVBaselineModel:
         - Voltage deviation losses: 0.99%
         """
 
-        p_ni = self.inverter_coeffs.inverter_power_kw
-        voltage_loss_factor = self.inverter_coeffs.voltage_loss_factor
-        mppt_loss_factor = self.inverter_coeffs.mppt_loss_factor
+        total_inv_power = self.inverter_coeffs.total_inverter_power
+        voltage_loss_factor = 0.9901  # 99.01%
+        mppt_loss_factor = 0.9950  # 99.50%
 
-        load_ratio = np.clip(dc_power_kw / p_ni, 0, 1.2)
+        load_ratio = np.clip(dc_power_kw / total_inv_power, 0, 1.2)
         load_points = np.array([0.0, 0.05, 0.10, 0.20, 0.50, 0.75, 1.0, 1.1, 1.2])
         eff_points = np.array([0.0, 0.80, 0.91, 0.94, 0.98, 0.97, 0.95, 0.94, 0.92])
 
@@ -121,7 +134,7 @@ class PVBaselineModel:
     def _calculate_inverter_efficiency_nbr(self, dc_power_kw):
         """Calculate inverter efficiency using NBR 16274 Equation E.2."""
 
-        p_ni = self.inverter_coeffs.inverter_power_kw
+        p_ni = self.inverter_coeffs.total_inverter_power
         k0 = self.inverter_coeffs.k0
         k1 = self.inverter_coeffs.k1
         k2 = self.inverter_coeffs.k2
@@ -134,6 +147,7 @@ class PVBaselineModel:
         discriminant = (k1 + 1) ** 2 - 4 * k2 * (k0 - load_ratio)
         discriminant = np.maximum(discriminant, 0)
 
+        # efficiency = (-(k1 + 1) + np.sqrt(discriminant)) / (2 * k2 * load_ratio)
         pac_normalized = (-(k1 + 1) + np.sqrt(discriminant)) / (2 * k2)
         efficiency = pac_normalized / load_ratio
         efficiency = np.clip(efficiency, min_eff, max_eff)
@@ -151,11 +165,10 @@ class PVBaselineModel:
         if missing_cols:
             raise ValueError(f"Missing required columns: {missing_cols}")
 
-        if self.apply_dc_loss and coeffs is not None:
-            required_coeffs = ["a0", "a1", "a2"]
-            missing_coeffs = [c for c in required_coeffs if c not in coeffs]
-            if missing_coeffs:
-                raise ValueError(f"Missing required coefficients: {missing_coeffs}")
+        required_coeffs = ["a0", "a1", "a2"]
+        missing_coeffs = [c for c in required_coeffs if c not in coeffs]
+        if missing_coeffs:
+            raise ValueError(f"Missing required coefficients: {missing_coeffs}")
 
         irradiance = df[irrad_col]
         air_temp = df[air_temp_col]

@@ -1,45 +1,11 @@
-import warnings
-from datetime import timedelta
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 import streamlit as st
 
-from src.models.physical.coefficients import PVCoefficientOptimizer
-from src.models.physical.evaluator import PVModelPerformanceEvaluator
-from src.models.physical.params import PVSystemParameters
-from src.models.physical.pv_model import PVBaselineModel
-
-
-def generate_sample_data_with_real():
-    """Gera dados sintéticos com 'valores reais' simulados"""
-    dates = pd.date_range("2024-01-01", "2024-12-31", freq="H")
-
-    hour_of_day = dates.hour
-    day_of_year = dates.dayofyear
-
-    base_irradiance = np.maximum(0, 800 * np.sin(np.pi * (hour_of_day - 6) / 12))
-    seasonal_factor = 0.8 + 0.4 * np.sin(2 * np.pi * (day_of_year - 80) / 365)
-    cloud_factor = 0.7 + 0.3 * np.random.random(len(dates))
-    gti = base_irradiance * seasonal_factor * cloud_factor
-    gti = np.maximum(0, gti)
-
-    seasonal_temp = 25 + 10 * np.sin(2 * np.pi * (day_of_year - 80) / 365)
-    daily_temp_variation = 5 * np.sin(np.pi * (hour_of_day - 6) / 12)
-    air_temp = seasonal_temp + daily_temp_variation + np.random.normal(0, 2, len(dates))
-
-    df_temp = pd.DataFrame({"gti": gti, "air_temp": air_temp}, index=dates)
-
-    real_model = PVBaselineModel(PVSystemParameters())
-    real_coeffs = {"a0": 0.015, "a1": -0.12, "a2": 0.25}
-    df_real = real_model.calculate_ac_power(df_temp, real_coeffs)
-
-    noise_factor = 0.05  # 5% de ruído
-    df_real["ac_power_kw_real"] = df_real["ac_power_kw_est"] * (1 + np.random.normal(0, noise_factor, len(df_real)))
-    df_real["ac_power_kw_real"] = np.maximum(0, df_real["ac_power_kw_real"])
-
-    return df_real[["gti", "air_temp", "ac_power_kw_real"]]
+from models.physical.coefficients import PVCoefficientOptimizer
+from models.physical.evaluator import PVModelPerformanceEvaluator
+from models.physical.params import PVSystemParameters
+from models.physical.pv_model import PVBaselineModel
 
 
 def calculate_performance_metrics(y_true, y_pred):
@@ -140,6 +106,7 @@ def calculate_energy_annual(df_power, capacity_kwp):
     Implementa o cálculo da energia injetada na rede ao longo de um ano típico
     conforme Anexo G da NBR 16274.
     """
+
     annual_energy = df_power["ac_power_kw_est"].sum()
     capacity_factor = (annual_energy / (capacity_kwp * 8760)) * 100
     specific_energy = annual_energy / capacity_kwp
@@ -197,94 +164,3 @@ def calculate_daily_energy(df, power_ac_col="power_ac_kw"):
     df["energy_kwh"] = df[power_ac_col] * delta_t
     return df["energy_kwh"].resample("D").sum().to_frame("daily_energy_kwh")
     # return df["energy_kwh"].resample("D").sum()
-
-
-def run_optimization_analysis(df_dropna, initial_coeffs, pv_model, params):
-    """Executa análise completa de otimização com diferentes métodos."""
-    optimizer = PVCoefficientOptimizer(
-        pv_model=pv_model,
-        params=params,
-        irrad_col="gti",
-        air_temp_col="air_temp",
-        power_col="ac_power_kw",
-    )
-
-    try:
-        result = optimizer.calibrate_with_ac_data(df=df_dropna, initial_coeffs=initial_coeffs)
-        if result["success"]:
-            result["metrics"] = validate_optimization_result(df_dropna, pv_model, result["optimized_coeffs"])
-    except Exception as e:
-        print(f"Erro durante otimização: {e}")
-        result = {"success": False, "error": str(e)}
-
-    return result
-
-
-def validate_optimization_result(df, pv_model, optimized_coeffs):
-    validator = PVModelPerformanceEvaluator(pv_model)
-    metrics = validator.evaluate_coefficients(
-        df,
-        optimized_coeffs,
-        irrad_col="gti",
-        air_temp_col="air_temp",
-        power_ac_col="ac_power_kw",
-    )
-
-    print("")
-    print("--" * 50)
-    print(" => ANÁLISE DE OTIMIZAÇÃO DE COEFICIENTES")
-    print("--" * 50)
-
-    print("\n => Coeficientes otimizados:")
-    print(f"  - a0: {optimized_coeffs['a0']:.3f}")
-    print(f"  - a1: {optimized_coeffs['a1']:.3f}")
-    print(f"  - a2: {optimized_coeffs['a2']:.3f}")
-
-    print("\n => Métricas de validação:")
-    print(f"  - MAE  : {metrics['mae']:.3f} W")
-    print(f"  - nMAE : {metrics['nmae']:.3f}%")
-    print(f"  - RMSE : {metrics['rmse']:.3f} W")
-    print(f"  - nRMSE: {metrics['nrmse']:.3f} W")
-    print(f"  - Bias : {metrics['mean_bias']:.3f} W")
-    print(f"  - R²   : {metrics['r2_score']:.3f}")
-    print("--" * 50)
-    return metrics
-
-
-def compare_results(m_ini, m_opt):
-    mae_diff = float(m_ini["mae"] - m_opt["mae"])
-    nmae_diff = float(m_ini["nmae"] - m_opt["nmae"])
-    rmse_diff = float(m_ini["rmse"] - m_opt["rmse"])
-    nrmse_diff = float(m_ini["nrmse"] - m_opt["nrmse"])
-    bias_diff = float(m_ini["mean_bias"] - m_opt["mean_bias"])
-    r2_diff = float(m_opt["r2_score"] - m_ini["r2_score"])
-
-    mae_pct = 100 * mae_diff / m_ini["mae"] if m_ini["mae"] != 0 else 0
-    rmse_pct = 100 * rmse_diff / m_ini["rmse"] if m_ini["rmse"] != 0 else 0
-    nmae_pct = 100 * nmae_diff / m_ini["nmae"] if m_ini["nmae"] != 0 else 0
-    nrmse_pct = 100 * nrmse_diff / m_ini["nrmse"] if m_ini["nrmse"] != 0 else 0
-    bias_pct = (
-        100 * (abs(m_ini["mean_bias"]) - abs(m_opt["mean_bias"])) / abs(m_ini["mean_bias"])
-        if m_ini["mean_bias"] != 0
-        else 0
-    )
-
-    print("\nCOMPARAÇÃO DE RESULTADOS:")
-    print("-" * 70)
-    print(f"{'Métrica':^10} | {'Inicial':^12} | {'Otimizado':^12} | {'Δ':^10} | {'Δ (%)':^10}")
-    print("-" * 70)
-    print(f"{'MAE (W)':<10} | {m_ini['mae']:<12.3f} | {m_opt['mae']:<12.3f} | {mae_diff:<10.3f} | {mae_pct:<10.2f}")
-    print(
-        f"{'nMAE (%)':<10} | {m_ini['nmae']:<12.2f} | {m_opt['nmae']:<12.2f} | {nmae_diff:<10.2f} | {nmae_pct:<10.2f}"
-    )
-    print(
-        f"{'RMSE (W)':<10} | {m_ini['rmse']:<12.3f} | {m_opt['rmse']:<12.3f} | {rmse_diff:<10.3f} | {rmse_pct:<10.2f}"
-    )
-    print(
-        f"{'nRMSE (%)':<10} | {m_ini['nrmse']:<12.4f} | {m_opt['nrmse']:<12.4f} | {nrmse_diff:<10.4f} | {nrmse_pct:<10.2f}"
-    )
-    print(
-        f"{'Bias (W)':<10} | {m_ini['mean_bias']:<12.3f} | {m_opt['mean_bias']:<12.3f} | {bias_diff:<10.3f} | {bias_pct:<10.2f}"
-    )
-    print(f"{'R²':<10} | {m_ini['r2_score']:<12.4f} | {m_opt['r2_score']:<12.4f} | {r2_diff:<10.4f} | {'':<10}")
-    print("-" * 70)

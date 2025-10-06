@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.models.physical.pv_model import PVBaselineModel
+from models.physical.pv_model import PVBaselineModel
 
 
 class PVModelPerformanceEvaluator:
